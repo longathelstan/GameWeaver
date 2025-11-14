@@ -22,7 +22,7 @@
 ```
 /ai-game-generator
 |
-|--- 📁 /frontend-admin         (Giao diện Quản trị cho người dùng)
+|--- 📁 /web-client       (Giao diện Quản trị cho người dùng)
 |    |--- /src
 |    |    |--- /components      (Các UI component: PromptInput, ModeSelector, OutputViewer)
 |    |    |--- /pages           (Trang chính: GeneratorPage.jsx)
@@ -30,7 +30,7 @@
 |    |    |--- App.jsx
 |    |--- package.json         (Quản lý thư viện React, Vite...)
 |
-|--- 📁 /backend-api            (Máy chủ Điều phối - Bộ não)
+|--- 📁 /api-server           (Máy chủ Điều phối - Bộ não)
 |    |--- /src
 |    |    |--- /controllers     (Xử lý các request: generator.controller.js)
 |    |    |--- /services        (Nơi chứa logic nghiệp vụ chính)
@@ -39,7 +39,7 @@
 |    |    |    |--- generator.service.js (Dịch vụ "Điều phối Prompt" chính)
 |    |    |--- /routes          (Định tuyến API: /api/v1/generate)
 |    |    |--- /utils           (Các hàm hỗ trợ, ví dụ: validator.js)
-|    |    |--- server.js        (Khởi chạy máy chủ Express/Fastify)
+|    |    |--- server.js        (Khởi chạy máy chủ Express)
 |    |--- package.json         (Quản lý thư viện Node.js, Express...)
 |
 |--- 📁 /knowledge-base         (Cơ sở Tri thức RAG - "Khuôn mẫu")
