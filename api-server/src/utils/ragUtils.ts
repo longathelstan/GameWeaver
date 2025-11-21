@@ -5,7 +5,7 @@ import { TaskType } from '@google/generative-ai';
 
 // Initialize embeddings model
 const embeddings = new GoogleGenerativeAIEmbeddings({
-    modelName: 'embedding-001', // or text-embedding-004 if supported by langchain wrapper
+    modelName: 'text-embedding-004',
     taskType: TaskType.RETRIEVAL_DOCUMENT,
     apiKey: process.env.GEMINI_API_KEY,
 });

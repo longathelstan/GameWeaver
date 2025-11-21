@@ -21,7 +21,7 @@ const Step1Upload = () => {
 
         try {
             // Ingest Data
-            const ingestRes = await fetch('http://localhost:3001/api/ingest-data', {
+            const ingestRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/ingest-data`, {
                 method: 'POST',
                 body: formData,
             });
@@ -30,7 +30,7 @@ const Step1Upload = () => {
             if (ingestRes.ok) {
                 // Map Content
                 setIsMapping(true);
-                const mapRes = await fetch('http://localhost:3001/api/map-content', {
+                const mapRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/map-content`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ data: ingestData.data }),

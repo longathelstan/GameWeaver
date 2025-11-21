@@ -29,7 +29,7 @@ const Step3GameSelection = () => {
     const getSuggestions = async () => {
         setIsLoading(true);
         try {
-            const res = await fetch('http://localhost:3001/api/suggest-game', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/suggest-game`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ questions }),

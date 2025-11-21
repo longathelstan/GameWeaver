@@ -19,7 +19,7 @@ const Step2Questions = () => {
     const generateQuestions = async () => {
         setIsLoading(true);
         try {
-            const res = await fetch('http://localhost:3001/api/generate-questions', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/generate-questions`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ topics: selectedTopics, quantity: 5 }),

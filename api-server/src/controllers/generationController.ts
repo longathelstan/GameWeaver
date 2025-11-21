@@ -3,18 +3,25 @@ import { model } from '../utils/gemini';
 import { retrieveContext } from '../utils/ragUtils';
 
 export const generateQuestionsController = async (req: Request, res: Response) => {
-    try {
-        const { topics, quantity = 5 } = req.body;
+  try {
+    const { topics, quantity = 5 } = req.body;
 
-        if (!topics || !Array.isArray(topics)) {
-            return res.status(400).json({ message: 'Invalid topics provided.' });
-        }
+    if (!topics || !Array.isArray(topics)) {
+      return res.status(400).json({ message: 'Invalid topics provided.' });
+    }
 
-        // Retrieve context for the selected topics
-        // In a real app, we would iterate over topics and aggregate context
-        const context = await retrieveContext(topics.join(' '));
+    // Retrieve context for the selected topics
+    // In a real app, we would iterate over topics and aggregate context
+    const context = await retrieveContext(topics.join(' '));
 
-        const prompt = `
+    if (!context || context.trim().length === 0) {
+      console.warn('Context is empty. Skipping generation to avoid hallucinations.');
+      return res.status(400).json({
+        message: 'Unable to retrieve context from the uploaded file. This might be due to API rate limits or the content not matching the selected topics.'
+      });
+    }
+
+    const prompt = `
       Based on the following context, generate ${quantity} multiple-choice questions.
       
       Context:
@@ -33,24 +40,24 @@ export const generateQuestionsController = async (req: Request, res: Response) =
       Only return the JSON array.
     `;
 
-        const result = await model.generateContent(prompt);
-        const response = result.response;
-        const text = response.text();
-        const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-        const questions = JSON.parse(cleanText);
+    const result = await model.generateContent(prompt);
+    const response = result.response;
+    const text = response.text();
+    const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const questions = JSON.parse(cleanText);
 
-        res.status(200).json({ questions });
-    } catch (error) {
-        console.error('Error generating questions:', error);
-        res.status(500).json({ message: 'Error generating questions.' });
-    }
+    res.status(200).json({ questions });
+  } catch (error) {
+    console.error('Error generating questions:', error);
+    res.status(500).json({ message: 'Error generating questions.' });
+  }
 };
 
 export const suggestGameController = async (req: Request, res: Response) => {
-    try {
-        const { questions } = req.body;
+  try {
+    const { questions } = req.body;
 
-        const prompt = `
+    const prompt = `
       Analyze the following questions and suggest 3 suitable educational game types.
       
       Questions:
@@ -69,24 +76,24 @@ export const suggestGameController = async (req: Request, res: Response) => {
       Only return the JSON array.
     `;
 
-        const result = await model.generateContent(prompt);
-        const response = result.response;
-        const text = response.text();
-        const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-        const suggestions = JSON.parse(cleanText);
+    const result = await model.generateContent(prompt);
+    const response = result.response;
+    const text = response.text();
+    const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const suggestions = JSON.parse(cleanText);
 
-        res.status(200).json({ suggestions });
-    } catch (error) {
-        console.error('Error suggesting games:', error);
-        res.status(500).json({ message: 'Error suggesting games.' });
-    }
+    res.status(200).json({ suggestions });
+  } catch (error) {
+    console.error('Error suggesting games:', error);
+    res.status(500).json({ message: 'Error suggesting games.' });
+  }
 };
 
 export const generateGameCodeController = async (req: Request, res: Response) => {
-    try {
-        const { gameType, questions, customPrompt } = req.body;
+  try {
+    const { gameType, questions, customPrompt } = req.body;
 
-        const prompt = `
+    const prompt = `
       Create a single-file React component (using Tailwind CSS) for a "${gameType}" game.
       
       Game Data (Questions):
@@ -107,14 +114,14 @@ export const generateGameCodeController = async (req: Request, res: Response) =>
       - Export the component as default.
     `;
 
-        const result = await model.generateContent(prompt);
-        const response = result.response;
-        const text = response.text();
-        const code = text.replace(/```tsx/g, '').replace(/```jsx/g, '').replace(/```/g, '').trim();
+    const result = await model.generateContent(prompt);
+    const response = result.response;
+    const text = response.text();
+    const code = text.replace(/```tsx/g, '').replace(/```jsx/g, '').replace(/```/g, '').trim();
 
-        res.status(200).json({ code });
-    } catch (error) {
-        console.error('Error generating game code:', error);
-        res.status(500).json({ message: 'Error generating game code.' });
-    }
+    res.status(200).json({ code });
+  } catch (error) {
+    console.error('Error generating game code:', error);
+    res.status(500).json({ message: 'Error generating game code.' });
+  }
 };
