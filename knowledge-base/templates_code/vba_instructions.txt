@@ -1,0 +1,43 @@
+### Hướng dẫn Cài đặt và Sử dụng Mã VBA trong PowerPoint
+
+Đây là cách để bạn tích hợp game vừa được tạo vào bản trình bày PowerPoint của mình.
+
+**Bước 1: Mở Tab "Developer"**
+
+1.  Mở PowerPoint.
+2.  Đi tới `File` > `Options`.
+3.  Trong cửa sổ `PowerPoint Options`, chọn `Customize Ribbon`.
+4.  Ở cột bên phải (`Main Tabs`), tìm và tích vào ô `Developer`.
+5.  Nhấn `OK`. Bây giờ bạn sẽ thấy một tab mới có tên là `Developer` trên thanh công cụ.
+
+**Bước 2: Mở Trình soạn thảo VBA**
+
+1.  Nhấp vào tab `Developer`.
+2.  Nhấp vào nút `Visual Basic` (hoặc nhấn `Alt + F11`).
+
+**Bước 3: Chèn một Module mới**
+
+1.  Trong cửa sổ `Microsoft Visual Basic for Applications`, nhìn vào khung `Project - VBAProject` ở bên trái.
+2.  Nhấp chuột phải vào `VBAProject (YourPresentationName.pptm)`.
+3.  Chọn `Insert` > `Module`. Một cửa sổ trống cho module mới sẽ xuất hiện.
+
+**Bước 4: Dán Mã Code**
+
+1.  **Xóa mọi thứ** có sẵn trong cửa sổ module trống đó.
+2.  **Sao chép toàn bộ mã code** mà bạn nhận được từ ứng dụng GameWeaver.
+3.  **Dán** nó vào cửa sổ module trống.
+
+**Bước 5: Lưu Bản trình bày đúng định dạng**
+
+1.  Quay lại PowerPoint.
+2.  Đi tới `File` > `Save As`.
+3.  Trong ô `Save as type`, chọn `PowerPoint Macro-Enabled Presentation (*.pptm)`.
+4.  Đặt tên cho tệp của bạn và nhấn `Save`. **Đây là bước cực kỳ quan trọng!** Nếu bạn lưu dưới dạng `.pptx` thông thường, tất cả mã VBA sẽ bị xóa.
+
+**Bước 6: Chạy Game**
+
+1.  Để bắt đầu game, bạn cần chạy macro `StartQuiz`.
+2.  Đi tới tab `Developer` > `Macros`.
+3.  Chọn macro có tên `StartQuiz` và nhấn `Run`.
+
+Bạn cũng có thể gán macro này cho một nút hoặc một hình dạng trên slide để người dùng có thể nhấp vào đó để bắt đầu game một cách dễ dàng. Chúc bạn thành công!
