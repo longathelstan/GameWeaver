@@ -13,7 +13,7 @@
 ### Detailed Todo List 
 
 #### Phase 1: Project Setup & Infrastructure
-- [ ] **Initial Setup:** Khởi tạo Monorepo hoặc cấu trúc thư mục tách biệt: `client` (Next.js) và `server` (Express). Cài đặt TypeScript cho cả hai.
+- [x] **Initial Setup:** Khởi tạo Monorepo hoặc cấu trúc thư mục tách biệt: `client` (Next.js) và `server` (Express). Cài đặt TypeScript cho cả hai.
 - [ ] **UI Library:** Cài đặt Shadcn UI cho `client`. Khởi tạo các component cơ bản: Button, Input, Card, Checkbox, Dialog, ScrollArea, Textarea, Tabs.
 - [ ] **Database Setup:** Cài đặt Prisma và kết nối với PostgreSQL. Tạo schema `User`, `Project`, `TextbookData` (lưu raw JSON), và `QuestionBank`.
 - [ ] **AI Configuration:** Cài đặt `@google/generative-ai` và `langchain` trong `server`. Tạo file config để load `GEMINI_API_KEY`.
@@ -56,5 +56,3 @@
 - [ ] **Step 5: Refine & Download:**
     - Thêm khung chat nhỏ "Refine Game": User nhập yêu cầu sửa (vd: "Đổi màu nền thành xanh"), gửi request lại API generate code.
     - Nút "Download": Tải file `.tsx` hoặc `.zip` về máy.
-
-
