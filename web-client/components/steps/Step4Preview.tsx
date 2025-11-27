@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Download, Code, RefreshCw } from 'lucide-react';
 import Editor from '@monaco-editor/react';
+import { Sandpack } from "@codesandbox/sandpack-react";
 
 const Step4Preview = () => {
     const {
@@ -102,20 +103,24 @@ const Step4Preview = () => {
                         </CardContent>
                     </Card>
 
-                    {/* Preview Placeholder */}
+                    {/* Preview Area */}
                     <Card className="flex flex-col h-full">
                         <CardHeader>
                             <CardTitle>Preview</CardTitle>
                         </CardHeader>
-                        <CardContent className="flex-1 flex items-center justify-center bg-gray-100 dark:bg-gray-900 rounded-b-lg">
-                            <div className="text-center p-6">
-                                <p className="text-muted-foreground mb-4">
-                                    Live preview requires a running React environment with dynamic import capabilities (e.g., Sandpack).
-                                </p>
-                                <p className="text-sm text-muted-foreground">
-                                    Please download the code and import it into your project to run the game.
-                                </p>
-                            </div>
+                        <CardContent className="flex-1 p-0 overflow-hidden rounded-b-lg border-t">
+                            <Sandpack
+                                template="react"
+                                theme="dark"
+                                files={{
+                                    "/App.js": generatedCode,
+                                }}
+                                options={{
+                                    showNavigator: true,
+                                    showTabs: false,
+                                    externalResources: ["https://cdn.tailwindcss.com"],
+                                }}
+                            />
                         </CardContent>
                     </Card>
                 </div>

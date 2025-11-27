@@ -1,7 +1,10 @@
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
-import { MemoryVectorStore } from 'langchain/vectorstores/memory';
+import { PrismaVectorStore } from '@langchain/community/vectorstores/prisma';
 import { GoogleGenerativeAIEmbeddings } from '@langchain/google-genai';
 import { TaskType } from '@google/generative-ai';
+import { PrismaClient, Document, Prisma } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 // Initialize embeddings model
 const embeddings = new GoogleGenerativeAIEmbeddings({
@@ -10,9 +13,25 @@ const embeddings = new GoogleGenerativeAIEmbeddings({
     apiKey: process.env.GEMINI_API_KEY,
 });
 
-// Global variable to hold the vector store in memory (for simplicity in this phase)
-// In a real production app, this should be a database like pgvector or Pinecone.
-let vectorStore: MemoryVectorStore | null = null;
+// Initialize PrismaVectorStore
+let vectorStore: any;
+try {
+    vectorStore = PrismaVectorStore.withModel<Document>(prisma).create(
+        embeddings,
+        {
+            prisma: Prisma,
+            tableName: 'Document',
+            vectorColumnName: 'embedding',
+            columns: {
+                id: PrismaVectorStore.IdColumn,
+                content: PrismaVectorStore.ContentColumn,
+            },
+        }
+    );
+    console.log('PrismaVectorStore initialized successfully.');
+} catch (error) {
+    console.error('Failed to initialize PrismaVectorStore:', error);
+}
 
 export const processAndVectorizeContent = async (text: string) => {
     try {
@@ -25,12 +44,8 @@ export const processAndVectorizeContent = async (text: string) => {
 
         console.log(`Creating vector store with ${docs.length} chunks...`);
 
-        // Create a new vector store or add to existing one
-        if (!vectorStore) {
-            vectorStore = await MemoryVectorStore.fromDocuments(docs, embeddings);
-        } else {
-            await vectorStore.addDocuments(docs);
-        }
+        // Add documents to PrismaVectorStore
+        await vectorStore.addDocuments(docs);
 
         console.log('Vector store updated successfully.');
         return true;
@@ -41,21 +56,23 @@ export const processAndVectorizeContent = async (text: string) => {
 };
 
 export const retrieveContext = async (query: string, k: number = 4) => {
-    if (!vectorStore) {
-        console.warn('Vector store is empty. Returning empty context.');
-        return '';
-    }
-
     try {
+        console.log(`Searching for context with query: "${query}"`);
         const results = await vectorStore.similaritySearch(query, k);
-        return results.map((doc) => doc.pageContent).join('\n\n');
+        console.log(`Found ${results.length} documents.`);
+        return results.map((doc: Document) => doc.content).join('\n\n');
     } catch (error) {
         console.error('Error retrieving context:', error);
         return '';
     }
 };
 
-// Helper to clear vector store (e.g., when uploading new file)
-export const clearVectorStore = () => {
-    vectorStore = null;
+// Helper to clear vector store (optional, be careful in production)
+export const clearVectorStore = async () => {
+    try {
+        await prisma.document.deleteMany({});
+        console.log('Vector store cleared successfully.');
+    } catch (error) {
+        console.error('Error clearing vector store:', error);
+    }
 };

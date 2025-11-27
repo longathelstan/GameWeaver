@@ -26,7 +26,10 @@ export const ingestDataController = async (req: Request, res: Response) => {
 
     // Convert JSON to string for vectorization (simplistic approach)
     // In a real app, we might want to structure this better
-    const textContent = JSON.stringify(jsonData, null, 2);
+    // Convert JSON to string for vectorization with better structure
+    const textContent = Array.isArray(jsonData)
+      ? jsonData.map((item: any) => `Chapter: ${item.chapter}\nLesson: ${item.lesson}\nContent: ${item.content}`).join('\n\n')
+      : JSON.stringify(jsonData, null, 2);
 
     // Process and vectorize
     await processAndVectorizeContent(textContent);
