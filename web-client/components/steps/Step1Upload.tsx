@@ -1,51 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppStore, TreeData } from '@/lib/store';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Upload, FileJson, ArrowRight, Loader2 } from 'lucide-react';
+import { Book, ArrowRight, Loader2, CheckCircle } from 'lucide-react';
+
+interface Book {
+    id: number;
+    name: string;
+    createdAt: string;
+}
 
 const Step1Upload = () => {
     const { setTreeData, treeData, selectedTopics, setSelectedTopics, setCurrentStep } = useAppStore();
-    const [isUploading, setIsUploading] = useState(false);
-    const [isMapping, setIsMapping] = useState(false);
+    const [books, setBooks] = useState<Book[]>([]);
+    const [isLoadingBooks, setIsLoadingBooks] = useState(true);
+    const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+    const [selectedBookId, setSelectedBookId] = useState<number | null>(null);
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+    useEffect(() => {
+        const fetchBooks = async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/books`);
+                const data = await res.json();
+                setBooks(data.books || []);
+            } catch (error) {
+                console.error('Error fetching books:', error);
+            } finally {
+                setIsLoadingBooks(false);
+            }
+        };
+        fetchBooks();
+    }, []);
 
-        setIsUploading(true);
-        const formData = new FormData();
-        formData.append('file', file);
-
+    const handleBookSelect = async (bookId: number) => {
+        setIsLoadingDetails(true);
+        setSelectedBookId(bookId);
         try {
-            // Ingest Data
-            const ingestRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/ingest-data`, {
-                method: 'POST',
-                body: formData,
-            });
-            const ingestData = await ingestRes.json();
-
-            if (ingestRes.ok) {
-                // Map Content
-                setIsMapping(true);
-                const mapRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/map-content`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: ingestData.data }),
-                });
-                const mapData = await mapRes.json();
-
-                if (mapRes.ok) {
-                    setTreeData(mapData.treeData);
-                }
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/books/${bookId}`);
+            const data = await res.json();
+            if (data.book && data.book.structure) {
+                setTreeData(data.book.structure);
+                // Reset selection when changing books
+                setSelectedTopics([]);
             }
         } catch (error) {
-            console.error('Error uploading/mapping:', error);
+            console.error('Error fetching book details:', error);
         } finally {
-            setIsUploading(false);
-            setIsMapping(false);
+            setIsLoadingDetails(false);
         }
     };
 
@@ -86,28 +89,43 @@ const Step1Upload = () => {
         <div className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>1. Upload Textbook Data (JSON)</CardTitle>
+                    <CardTitle>1. Select a Textbook</CardTitle>
+                    <CardDescription>Choose a pre-loaded textbook to generate games from.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <div className="flex items-center justify-center w-full">
-                        <label
-                            htmlFor="dropzone-file"
-                            className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 dark:hover:bg-gray-800 dark:bg-gray-700 border-gray-300 dark:border-gray-600"
-                        >
-                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                {isUploading || isMapping ? (
-                                    <Loader2 className="w-10 h-10 mb-3 text-gray-400 animate-spin" />
-                                ) : (
-                                    <Upload className="w-10 h-10 mb-3 text-gray-400" />
-                                )}
-                                <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                                    <span className="font-semibold">Click to upload</span> or drag and drop
-                                </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">JSON files only</p>
-                            </div>
-                            <input id="dropzone-file" type="file" className="hidden" accept=".json" onChange={handleFileUpload} />
-                        </label>
-                    </div>
+                    {isLoadingBooks ? (
+                        <div className="flex justify-center p-8">
+                            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {books.map((book) => (
+                                <div
+                                    key={book.id}
+                                    className={`p-4 border rounded-lg cursor-pointer transition-all hover:border-primary ${selectedBookId === book.id ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-gray-200'
+                                        }`}
+                                    onClick={() => handleBookSelect(book.id)}
+                                >
+                                    <div className="flex items-center space-x-4">
+                                        <div className="p-2 bg-blue-100 rounded-full dark:bg-blue-900">
+                                            <Book className="w-6 h-6 text-blue-600 dark:text-blue-300" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="font-semibold">{book.name}</h3>
+                                            <p className="text-sm text-gray-500">ID: {book.id}</p>
+                                        </div>
+                                        {selectedBookId === book.id && (
+                                            isLoadingDetails ? (
+                                                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                                            ) : (
+                                                <CheckCircle className="w-6 h-6 text-green-500" />
+                                            )
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </CardContent>
             </Card>
 

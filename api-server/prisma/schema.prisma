@@ -38,6 +38,7 @@ model TextbookData {
   content   Json
   projectId Int
   project   Project  @relation(fields: [projectId], references: [id])
+  structure Json?
   createdAt DateTime @default(now())
 }
 

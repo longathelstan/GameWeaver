@@ -69,3 +69,43 @@ export const ingestDataController = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Error processing file.' });
   }
 };
+
+export const getBooksController = async (req: Request, res: Response) => {
+  try {
+    const books = await prisma.textbookData.findMany({
+      select: {
+        id: true,
+        name: true,
+        createdAt: true,
+        // Don't fetch heavy content/structure here
+      }
+    });
+    res.status(200).json({ books });
+  } catch (error) {
+    console.error('Error fetching books:', error);
+    res.status(500).json({ message: 'Error fetching books.' });
+  }
+};
+
+export const getBookDetailsController = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const book = await prisma.textbookData.findUnique({
+      where: { id: Number(id) },
+      select: {
+        id: true,
+        name: true,
+        structure: true, // Fetch the tree structure
+      }
+    });
+
+    if (!book) {
+      return res.status(404).json({ message: 'Book not found.' });
+    }
+
+    res.status(200).json({ book });
+  } catch (error) {
+    console.error('Error fetching book details:', error);
+    res.status(500).json({ message: 'Error fetching book details.' });
+  }
+};

@@ -41,13 +41,22 @@ export const processAndVectorizeContent = async (text: string) => {
         });
 
         const docs = await splitter.createDocuments([text]);
-
         console.log(`Creating vector store with ${docs.length} chunks...`);
 
-        // Add documents to PrismaVectorStore
-        await vectorStore.addDocuments(docs);
+        for (const doc of docs) {
+            const embedding = await embeddings.embedQuery(doc.pageContent);
 
-        console.log('Vector store updated successfully.');
+            // Use raw SQL for vector insertion
+            const vectorString = `[${embedding.join(',')}]`;
+            const id = require('crypto').randomUUID();
+
+            await prisma.$executeRaw`
+                INSERT INTO "Document" ("id", "content", "embedding", "metadata")
+                VALUES (${id}, ${doc.pageContent}, ${vectorString}::vector, ${doc.metadata}::jsonb)
+            `;
+        }
+
+        console.log('Vector store updated successfully (Manual Mode).');
         return true;
     } catch (error) {
         console.error('Error vectorizing content:', error);
@@ -58,9 +67,18 @@ export const processAndVectorizeContent = async (text: string) => {
 export const retrieveContext = async (query: string, k: number = 4) => {
     try {
         console.log(`Searching for context with query: "${query}"`);
-        const results = await vectorStore.similaritySearch(query, k);
-        console.log(`Found ${results.length} documents.`);
-        return results.map((doc: Document) => doc.content).join('\n\n');
+        const embedding = await embeddings.embedQuery(query);
+        const vectorString = `[${embedding.join(',')}]`;
+
+        const results = await prisma.$queryRaw`
+            SELECT content, 1 - (embedding <=> ${vectorString}::vector) as similarity
+            FROM "Document"
+            ORDER BY embedding <=> ${vectorString}::vector
+            LIMIT ${k}
+        `;
+
+        console.log(`Found ${(results as any[]).length} documents.`);
+        return (results as any[]).map((doc: any) => doc.content).join('\n\n');
     } catch (error) {
         console.error('Error retrieving context:', error);
         return '';
