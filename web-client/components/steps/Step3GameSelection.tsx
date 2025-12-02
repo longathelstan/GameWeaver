@@ -47,12 +47,12 @@ const Step3GameSelection = () => {
 
     return (
         <div className="space-y-6">
-            <h2 className="text-2xl font-bold">3. Choose Game Type</h2>
+            <h2 className="text-2xl font-bold">3. Chọn Loại Game</h2>
 
             <Tabs defaultValue="suggest" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="suggest">AI Suggestions</TabsTrigger>
-                    <TabsTrigger value="custom">Custom Request</TabsTrigger>
+                    <TabsTrigger value="suggest">AI Gợi ý</TabsTrigger>
+                    <TabsTrigger value="custom">Tự yêu cầu</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="suggest" className="space-y-4 mt-4">
@@ -93,14 +93,14 @@ const Step3GameSelection = () => {
                 <TabsContent value="custom" className="mt-4">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Describe your game idea</CardTitle>
+                            <CardTitle>Mô tả ý tưởng game của bạn</CardTitle>
                             <CardDescription>
-                                Tell the AI exactly what kind of game you want to build with these questions.
+                                Hãy cho AI biết chính xác loại game bạn muốn tạo với bộ câu hỏi này.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Textarea
-                                placeholder="e.g., I want a space-themed shooting game where correct answers shoot down asteroids..."
+                                placeholder="Ví dụ: Tôi muốn game bắn súng không gian, trả lời đúng để bắn thiên thạch..."
                                 className="min-h-[150px]"
                                 value={customGamePrompt}
                                 onChange={(e) => {
@@ -119,7 +119,7 @@ const Step3GameSelection = () => {
                     size="lg"
                     disabled={!selectedGameType}
                 >
-                    Generate Game Code <Sparkles className="ml-2 h-4 w-4" />
+                    Tạo Code Game <Sparkles className="ml-2 h-4 w-4" />
                 </Button>
             </div>
         </div>

@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pháo Thủ Lượng Giác 3D</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        #game-ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .panel {
+            pointer-events: auto;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px;
+            max-width: 400px;
+        }
+
+        #controls {
+            align-self: center;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        /* Quiz Styles */
+        #quiz-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            pointer-events: auto;
+        }
+
+        .quiz-box {
+            background: white;
+            color: #333;
+            padding: 30px;
+            border-radius: 15px;
+            width: 500px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+
+        .quiz-option {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: left;
+        }
+
+        .quiz-option:hover {
+            background: #e0e0e0;
+            border-color: #aaa;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Sliders */
+        input[type=range] {
+            width: 200px;
+            margin: 10px;
+        }
+
+        .stat-value {
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- UI Game -->
+    <div id="game-ui">
+        <div class="panel">
+            <h3>Nhiệm Vụ: Pháo Đài Số 3</h3>
+            <p>Mục tiêu cách bạn: <span id="target-dist" style="color: yellow">---</span> mét</p>
+            <p>Điểm số: <span id="score">0</span></p>
+            <p id="feedback" style="font-style: italic; color: #aaa;">Hãy trả lời câu hỏi để nạp đạn...</p>
+        </div>
+
+        <div id="controls" class="panel">
+            <div>
+                <label>Góc Bắn (Độ): <span id="angle-val" class="stat-value">45°</span></label><br>
+                <input type="range" id="angle-slider" min="0" max="90" value="45" disabled>
+            </div>
+            <div>
+                <label>Lực Bắn: <span id="power-val" class="stat-value">50</span></label><br>
+                <input type="range" id="power-slider" min="10" max="100" value="50" disabled>
+            </div>
+            <button id="fire-btn" disabled>KHAI HỎA!</button>
+        </div>
+    </div>
+
+    <!-- Quiz Overlay -->
+    <div id="quiz-overlay">
+        <div class="quiz-box">
+            <h2 id="q-title">Câu Hỏi Lượng Giác</h2>
+            <p id="q-content" style="font-size: 18px; margin-bottom: 20px;">Nội dung câu hỏi...</p>
+            <div id="q-options"></div>
+        </div>
+    </div>
+
+    <!-- Import Map -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- DỮ LIỆU CÂU HỎI (Dựa trên yêu cầu của bạn) ---
+        // Lưu ý: Tôi đã giả định các đáp án đúng dựa trên kiến thức chuẩn, bạn có thể chỉnh sửa lại.
+        const questions = [
+            {
+                q: "Chương III mở rộng khái niệm tỉ số lượng giác cho góc trong khoảng nào?",
+                a: ["0° đến 180°", "0° đến 90°", "0° đến 360°", "-90° đến 90°"],
+                correct: 0
+            },
+            {
+                q: "Ở lớp 9, học sinh đã biết tỉ số lượng giác của loại góc nào?",
+                a: ["Góc nhọn", "Góc tù", "Góc bẹt", "Góc phản"],
+                correct: 0
+            },
+            {
+                q: "Thuật ngữ nào thường xuất hiện trong bài học về hệ trục tọa độ (Bài 5)?",
+                a: ["Tọa độ điểm", "Đường trung tuyến", "Hình thoi", "Số nguyên tố"],
+                correct: 0 // Giả định bài 5 nói về tọa độ/đường tròn đơn vị
+            },
+            {
+                q: "Công cụ nào giúp tính giá trị lượng giác nhanh chóng?",
+                a: ["Máy tính cầm tay", "Thước kẻ", "Com-pa", "Ê-ke"],
+                correct: 0
+            },
+            {
+                q: "Lượng giác KHÔNG thường được dùng để tính toán trong lĩnh vực nào sau đây?",
+                a: ["Văn học lãng mạn", "Thiên văn học", "Hàng hải", "Xây dựng"],
+                correct: 0
+            }
+        ];
+
+        // --- GAME VARIABLES ---
+        let scene, camera, renderer, controls;
+        let cannon, cannonTube, target, projectile;
+        let isFiring = false;
+        let velocity = new THREE.Vector3();
+        let gravity = 9.8;
+        let score = 0;
+        let currentQIndex = 0;
+        let targetDistance = 0;
+        let hasAimAssist = false; // Thưởng nếu trả lời đúng
+
+        // UI Elements
+        const angleSlider = document.getElementById('angle-slider');
+        const powerSlider = document.getElementById('power-slider');
+        const angleVal = document.getElementById('angle-val');
+        const powerVal = document.getElementById('power-val');
+        const fireBtn = document.getElementById('fire-btn');
+        const targetDistUI = document.getElementById('target-dist');
+        const feedbackUI = document.getElementById('feedback');
+
+        init();
+        animate();
+        showNextQuestion();
+
+        function init() {
+            // Scene Setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB);
+            scene.fog = new THREE.Fog(0x87CEEB, 20, 100);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 10, 20);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            document.body.appendChild(renderer.domElement);
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+            dirLight.position.set(10, 20, 10);
+            dirLight.castShadow = true;
+            scene.add(dirLight);
+
+            // Ground
+            const groundGeo = new THREE.PlaneGeometry(200, 200);
+            const groundMat = new THREE.MeshStandardMaterial({ color: 0x228B22 }); // Forest Green
+            const ground = new THREE.Mesh(groundGeo, groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            // Grid Helper for distance visualization
+            const grid = new THREE.GridHelper(200, 20, 0x000000, 0x000000);
+            grid.material.opacity = 0.2;
+            grid.material.transparent = true;
+            scene.add(grid);
+
+            // Cannon Base
+            const baseGeo = new THREE.BoxGeometry(4, 2, 6);
+            const baseMat = new THREE.MeshStandardMaterial({ color: 0x555555 });
+            const base = new THREE.Mesh(baseGeo, baseMat);
+            base.position.y = 1;
+            base.castShadow = true;
+            scene.add(base);
+
+            // Cannon Tube (Pivot point logic)
+            cannon = new THREE.Group();
+            cannon.position.set(0, 2.5, 0);
+            scene.add(cannon);
+
+            const tubeGeo = new THREE.CylinderGeometry(0.8, 1, 8, 16);
+            const tubeMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+            cannonTube = new THREE.Mesh(tubeGeo, tubeMat);
+            cannonTube.position.y = 4; // Shift up so pivot is at bottom
+            cannonTube.castShadow = true;
+            cannon.add(cannonTube);
+
+            // Target
+            const targetGeo = new THREE.CylinderGeometry(3, 3, 0.5, 32);
+            const targetMat = new THREE.MeshStandardMaterial({ color: 0xFF0000 });
+            target = new THREE.Mesh(targetGeo, targetMat);
+            target.position.y = 0.25;
+            target.receiveShadow = true;
+            scene.add(target);
+            // spawnTarget() MOVED from here
+
+            // Projectile (Hidden initially)
+            const projGeo = new THREE.SphereGeometry(0.8, 16, 16);
+            const projMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
+            projectile = new THREE.Mesh(projGeo, projMat);
+            projectile.castShadow = true;
+            projectile.visible = false;
+            scene.add(projectile);
+
+            // Controls
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enablePan = false;
+            controls.maxPolarAngle = Math.PI / 2 - 0.1;
+
+            // Initialize target AFTER controls are ready
+            spawnTarget();
+
+            // Event Listeners
+            window.addEventListener('resize', onWindowResize);
+            angleSlider.addEventListener('input', updateCannonOrientation);
+            fireBtn.addEventListener('click', fireCannon);
+
+            updateCannonOrientation();
+        }
+
+        function spawnTarget() {
+            // Random distance between 20 and 80 meters
+            targetDistance = Math.floor(Math.random() * 60) + 20;
+            target.position.set(0, 0.25, -targetDistance);
+            targetDistUI.innerText = targetDistance;
+
+            // Camera adjustment to see both (simple look)
+            // Ensure controls exists before accessing
+            if (controls) {
+                camera.position.set(20, 15, 10);
+                controls.target.set(0, 0, -targetDistance / 2);
+                controls.update();
+            }
+        }
+
+        function updateCannonOrientation() {
+            const angle = parseInt(angleSlider.value);
+            angleVal.innerText = angle + "°";
+
+            const rad = THREE.MathUtils.degToRad(angle);
+            // Rotate around X axis.
+            // Start at -90deg (flat forward). Add angle.
+            cannon.rotation.x = -Math.PI / 2 + rad;
+        }
+
+        function showNextQuestion() {
+            const overlay = document.getElementById('quiz-overlay');
+            const qTitle = document.getElementById('q-title');
+            const qContent = document.getElementById('q-content');
+            const qOptions = document.getElementById('q-options');
+
+            if (currentQIndex >= questions.length) {
+                currentQIndex = 0; // Loop back or end game
+            }
+
+            const q = questions[currentQIndex];
+
+            qTitle.innerText = `Câu hỏi ${currentQIndex + 1}`;
+            qContent.innerText = q.q;
+            qOptions.innerHTML = '';
+
+            q.a.forEach((ans, index) => {
+                const btn = document.createElement('div');
+                btn.className = 'quiz-option';
+                btn.innerText = ans;
+                btn.onclick = () => handleAnswer(index === q.correct);
+                qOptions.appendChild(btn);
+            });
+
+            overlay.classList.remove('hidden');
+
+            // Disable controls while answering
+            toggleControls(false);
+        }
+
+        function handleAnswer(isCorrect) {
+            const overlay = document.getElementById('quiz-overlay');
+            overlay.classList.add('hidden');
+
+            hasAimAssist = isCorrect;
+
+            if (isCorrect) {
+                feedbackUI.innerText = "Chính xác! Đã kích hoạt Hỗ Trợ Ngắm (Vạch laser).";
+                feedbackUI.style.color = "#4CAF50";
+                addAimAssistLine();
+            } else {
+                feedbackUI.innerText = "Sai rồi! Bạn phải tự ước lượng góc bắn.";
+                feedbackUI.style.color = "#ff4444";
+                removeAimAssistLine();
+            }
+
+            toggleControls(true);
+        }
+
+        function addAimAssistLine() {
+            // Visualize the perfect trajectory (roughly)
+            // Physics: d = (v^2 * sin(2*theta)) / g
+            // We know d (targetDistance), g (9.8). We need v (power) and theta.
+            // Let's fix power to 50 (slider mid) and suggest Theta? 
+            // Or just draw a line from cannon to target.
+
+            const points = [];
+            points.push(new THREE.Vector3(0, 2.5, 0));
+            points.push(new THREE.Vector3(0, 0.25, -targetDistance));
+
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const material = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+            const line = new THREE.Line(geometry, material);
+            line.name = "aimLine";
+            scene.add(line);
+        }
+
+        function removeAimAssistLine() {
+            const line = scene.getObjectByName("aimLine");
+            if (line) scene.remove(line);
+        }
+
+        function toggleControls(enable) {
+            angleSlider.disabled = !enable;
+            powerSlider.disabled = !enable;
+            fireBtn.disabled = !enable;
+            if (enable) {
+                powerVal.innerText = powerSlider.value;
+            }
+        }
+
+        powerSlider.addEventListener('input', () => {
+            powerVal.innerText = powerSlider.value;
+        });
+
+        function fireCannon() {
+            if (isFiring) return;
+
+            removeAimAssistLine();
+            toggleControls(false); // Disable during flight
+
+            const angle = parseInt(angleSlider.value);
+            const power = parseInt(powerSlider.value);
+
+            // Setup Projectile
+            projectile.position.set(0, 2.5, 0); // Start at cannon pivot
+            projectile.visible = true;
+
+            // Physics Init
+            const rad = THREE.MathUtils.degToRad(angle);
+            // Velocity vectors:
+            // Y is up (sin), Z is forward negative (cos)
+            // Scale power down to fit scene scale better (e.g., divided by 2)
+            const speed = power * 0.5;
+
+            velocity.set(0, Math.sin(rad) * speed, -Math.cos(rad) * speed);
+
+            isFiring = true;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (isFiring) {
+                const dt = 0.05; // Time step
+
+                // Apply gravity
+                velocity.y -= gravity * dt;
+
+                // Move projectile
+                projectile.position.addScaledVector(velocity, dt);
+
+                // Check collision with ground
+                if (projectile.position.y <= 0.4) {
+                    projectile.position.y = 0.4;
+                    isFiring = false;
+                    checkHit();
+                }
+
+                // Camera follow projectile roughly
+                camera.position.x += (projectile.position.x + 20 - camera.position.x) * 0.1;
+                camera.lookAt(projectile.position);
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function checkHit() {
+            // Simple distance check
+            const dist = projectile.position.distanceTo(target.position);
+
+            let msg = "";
+            if (dist < 4) { // Hit radius
+                score += 100;
+                msg = `TRÚNG MỤC TIÊU! (+100 điểm). Khoảng cách lệch: ${dist.toFixed(2)}m`;
+                document.getElementById('score').innerText = score;
+                // Explosion effect (color change for now)
+                target.material.color.setHex(0xFFFF00);
+                setTimeout(() => target.material.color.setHex(0xFF0000), 500);
+
+                setTimeout(() => {
+                    currentQIndex++;
+                    spawnTarget();
+                    showNextQuestion();
+                    resetCamera();
+                }, 2000);
+            } else {
+                msg = `TRƯỢT RỒI! Cách mục tiêu ${dist.toFixed(2)}m. Hãy thử lại!`;
+                setTimeout(() => {
+                    toggleControls(true); // Let user adjust and shoot again without quiz
+                    resetCamera();
+                }, 2000);
+            }
+            feedbackUI.innerText = msg;
+        }
+
+        function resetCamera() {
+            projectile.visible = false;
+            camera.position.set(20, 15, 10);
+            controls.target.set(0, 0, -targetDistance / 2);
+            controls.update();
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+    </script>
+</body>
+
+</html>

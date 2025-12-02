@@ -12,10 +12,10 @@ export default function Home() {
     const { currentStep, setCurrentStep } = useAppStore();
 
     const steps = [
-        { id: 1, title: "Upload & Map" },
-        { id: 2, title: "Questions" },
-        { id: 3, title: "Game Type" },
-        { id: 4, title: "Code & Preview" },
+        { id: 1, title: "Chọn Sách" },
+        { id: 2, title: "Câu Hỏi" },
+        { id: 3, title: "Loại Game" },
+        { id: 4, title: "Xem Trước" },
     ];
 
     return (
@@ -24,7 +24,7 @@ export default function Home() {
                 <div className="flex flex-col space-y-2">
                     <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">GameWeaver</h1>
                     <p className="text-muted-foreground">
-                        AI-Powered Educational Game Generator
+                        Trình tạo trò chơi giáo dục hỗ trợ bởi AI
                     </p>
                 </div>
 

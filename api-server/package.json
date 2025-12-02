@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node dist/index.js",
     "dev": "nodemon src/index.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "preload": "ts-node scripts/preloadData.ts",
+    "verify_rag": "ts-node scripts/verify_rag.ts"
   },
   "keywords": [],
   "author": "",

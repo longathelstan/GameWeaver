@@ -38,10 +38,10 @@ const Step2Questions = () => {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold">2. Review & Edit Questions</h2>
+                <h2 className="text-2xl font-bold">2. Xem lại & Chỉnh sửa Câu hỏi</h2>
                 <Button onClick={generateQuestions} disabled={isLoading} variant="outline">
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-                    Regenerate All
+                    Tạo lại tất cả
                 </Button>
             </div>
 
@@ -58,12 +58,12 @@ const Step2Questions = () => {
                                     <span className="bg-primary text-primary-foreground w-6 h-6 rounded-full flex items-center justify-center text-sm mr-2">
                                         {index + 1}
                                     </span>
-                                    Question {index + 1}
+                                    Câu hỏi {index + 1}
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div>
-                                    <label className="text-sm font-medium">Question Text</label>
+                                    <label className="text-sm font-medium">Nội dung câu hỏi</label>
                                     <Textarea
                                         value={q.question}
                                         onChange={(e) => updateQuestion(q.id, { question: e.target.value })}
@@ -85,7 +85,7 @@ const Step2Questions = () => {
                                     ))}
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium">Correct Answer</label>
+                                    <label className="text-sm font-medium">Đáp án đúng</label>
                                     <select
                                         className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                         value={q.correctAnswer}
@@ -104,7 +104,7 @@ const Step2Questions = () => {
 
             <div className="flex justify-end pt-4">
                 <Button onClick={() => setCurrentStep(3)} size="lg">
-                    Approve & Next <ArrowRight className="ml-2 h-4 w-4" />
+                    Duyệt & Tiếp theo <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
             </div>
         </div>

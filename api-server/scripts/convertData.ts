@@ -13,7 +13,7 @@ if (!apiKey) {
 }
 
 const genAI = new GoogleGenerativeAI(apiKey);
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+const model = genAI.getGenerativeModel({ model: 'gemini-flash-lite-latest' });
 
 const convertData = async () => {
     const inputPath = path.resolve(__dirname, '../../10t2v.json');

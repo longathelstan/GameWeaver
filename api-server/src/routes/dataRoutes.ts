@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { ingestDataController, getBooksController, getBookDetailsController } from '../controllers/dataController';
 import { mapContentController } from '../controllers/mapController';
-import { generateQuestionsController, suggestGameController, generateGameCodeController } from '../controllers/generationController';
+import { generateQuestionsController, suggestGameController, generateGameCodeController, refineGameCodeController } from '../controllers/generationController';
 import upload from '../middlewares/multer';
 
 const router = Router();
@@ -11,6 +11,7 @@ router.post('/map-content', mapContentController);
 router.post('/generate-questions', generateQuestionsController);
 router.post('/suggest-game', suggestGameController);
 router.post('/generate-game-code', generateGameCodeController);
+router.post('/refine-game-code', refineGameCodeController);
 
 router.get('/books', getBooksController);
 router.get('/books/:id', getBookDetailsController);

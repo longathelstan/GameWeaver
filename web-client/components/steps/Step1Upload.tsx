@@ -89,8 +89,8 @@ const Step1Upload = () => {
         <div className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>1. Select a Textbook</CardTitle>
-                    <CardDescription>Choose a pre-loaded textbook to generate games from.</CardDescription>
+                    <CardTitle>1. Chọn Sách Giáo Khoa</CardTitle>
+                    <CardDescription>Chọn một cuốn sách đã được tải lên để tạo trò chơi.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {isLoadingBooks ? (
@@ -132,7 +132,7 @@ const Step1Upload = () => {
             {treeData.length > 0 && (
                 <Card>
                     <CardHeader>
-                        <CardTitle>Select Lessons / Topics</CardTitle>
+                        <CardTitle>Chọn Bài Học / Chủ Đề</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <ScrollArea className="h-[300px] w-full rounded-md border p-4">
@@ -140,7 +140,7 @@ const Step1Upload = () => {
                         </ScrollArea>
                         <div className="mt-4 flex justify-end">
                             <Button onClick={() => setCurrentStep(2)} disabled={selectedTopics.length === 0}>
-                                Next: Generate Questions <ArrowRight className="ml-2 h-4 w-4" />
+                                Tiếp theo: Tạo Câu Hỏi <ArrowRight className="ml-2 h-4 w-4" />
                             </Button>
                         </div>
                     </CardContent>
