@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppStore, Question } from '@/lib/store';
+import { getEnv } from '@/lib/env';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -19,7 +20,7 @@ const Step2Questions = () => {
     const generateQuestions = async () => {
         setIsLoading(true);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/generate-questions`, {
+            const res = await fetch(`${getEnv('NEXT_PUBLIC_BACKEND_URL')}/api/generate-questions`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ topics: selectedTopics, quantity: 5 }),

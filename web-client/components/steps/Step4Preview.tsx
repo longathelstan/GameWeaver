@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useAppStore } from '@/lib/store';
+import { getEnv } from '@/lib/env';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Download, Code, Play, Send, Sparkles, RefreshCw } from 'lucide-react';
@@ -42,7 +43,7 @@ const Step4Preview = () => {
     const generateCode = React.useCallback(async () => {
         setIsGenerating(true);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/generate-game-code`, {
+            const res = await fetch(`${getEnv('NEXT_PUBLIC_BACKEND_URL')}/api/generate-game-code`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -77,7 +78,7 @@ const Step4Preview = () => {
         setIsRefining(true);
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/refine-game-code`, {
+            const res = await fetch(`${getEnv('NEXT_PUBLIC_BACKEND_URL')}/api/refine-game-code`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

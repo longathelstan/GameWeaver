@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppStore, TreeData } from '@/lib/store';
+import { getEnv } from '@/lib/env';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -22,7 +23,7 @@ const Step1Upload = () => {
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/books`);
+                const res = await fetch(`${getEnv('NEXT_PUBLIC_BACKEND_URL')}/api/books`);
                 const data = await res.json();
                 setBooks(data.books || []);
             } catch (error) {
@@ -38,7 +39,7 @@ const Step1Upload = () => {
         setIsLoadingDetails(true);
         setSelectedBookId(bookId);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/books/${bookId}`);
+            const res = await fetch(`${getEnv('NEXT_PUBLIC_BACKEND_URL')}/api/books/${bookId}`);
             const data = await res.json();
             if (data.book && data.book.structure) {
                 setTreeData(data.book.structure);
