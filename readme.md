@@ -1,12 +1,3 @@
-# GAMEWEAVER
-
-**GameWeaver** - một nền tảng Admin Panel chuyên dụng hỗ trợ tự động hóa quy trình tạo trò chơi giáo dục từ dữ liệu Sách Giáo Khoa (SGK). Hệ thống ứng dụng kiến trúc RAG (Retrieval-Augmented Generation) kết hợp với mô hình ngôn ngữ lớn Google Gemini để thực hiện các tác vụ phức tạp: phân tích cấu trúc bài học, khởi tạo ngân hàng câu hỏi thông minh và sinh mã nguồn trò chơi tương tác hoàn chỉnh (trên nền tảng Next.js/React). Mục đích cốt lõi là giúp giáo viên giảm thiểu thời gian soạn thảo, đồng thời cá nhân hóa trải nghiệm học tập thông qua các trò chơi được thiết kế riêng biệt.
-
-
-## Tính năng Nổi bật
-
-**1. Xử lý dữ liệu thông minh (RAG Integration)**
-Hệ thống tích hợp Retrieval-Augmented Generation để truy xuất chính xác dữ liệu từ các file JSON sách giáo khoa. Khả năng ánh xạ (mapping) tự động giúp phân rã dữ liệu thô thành cấu trúc bài học, chương, và số trang cụ thể.
 
 **2. Quy trình Human-in-the-loop**
 Quy trình tạo câu hỏi cho phép sự can thiệp của con người ở mức độ cao. Giáo viên có quyền kiểm duyệt, chỉnh sửa trực tiếp hoặc yêu cầu AI tái tạo nội dung trước khi đưa vào sản xuất game, đảm bảo tính chính xác về mặt sư phạm.
