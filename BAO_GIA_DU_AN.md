@@ -1,7 +1,7 @@
 # BẢNG BÁO GIÁ VÀ PHÂN TÍCH CHI PHÍ DỰ ÁN GAMEWEAVER
 
 **Dự án:** GameWeaver - Hệ thống tạo Game giáo dục tự động bằng AI  
-**Ngày lập:** 23/12/2024  
+**Ngày lập:** 22/12/2025  
 **Đơn vị tiền tệ:** VNĐ
 
 ---
