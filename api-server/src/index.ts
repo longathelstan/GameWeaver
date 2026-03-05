@@ -14,7 +14,7 @@ const port = process.env.PORT || 3001;
 // CORS — restrict to allowed origins or all in dev
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
-  : ['http://localhost:3000', 'http://localhost:3001'];
+  : ['http://localhost:3000', 'http://localhost:3001', 'https://gameweaver.lowng.me'];
 
 app.use(
   cors({
