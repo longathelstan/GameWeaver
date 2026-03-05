@@ -1,0 +1,71 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 527B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/node:20-alpine
+#2 DONE 4.2s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 136B done
+#3 DONE 0.0s
+
+#4 [1/9] FROM docker.io/library/node:20-alpine@sha256:09e2b3d9726018aecf269bd35325f46bf75046a643a66d28360ec71132750ec8
+#4 resolve docker.io/library/node:20-alpine@sha256:09e2b3d9726018aecf269bd35325f46bf75046a643a66d28360ec71132750ec8 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 9.91kB 0.0s done
+#5 DONE 0.0s
+
+#6 [4/9] COPY package*.json ./
+#6 CACHED
+
+#7 [2/9] WORKDIR /app
+#7 CACHED
+
+#8 [3/9] RUN apk -U add openssl
+#8 CACHED
+
+#9 [5/9] COPY prisma ./prisma/
+#9 CACHED
+
+#10 [6/9] RUN npm install --legacy-peer-deps
+#10 CACHED
+
+#11 [7/9] COPY . .
+#11 DONE 0.1s
+
+#12 [8/9] RUN npx prisma generate
+#12 2.754 Environment variables loaded from .env
+#12 2.760 Prisma schema loaded from prisma/schema.prisma
+#12 3.412 
+#12 3.412 ✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 126ms
+#12 3.412 
+#12 3.412 Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+#12 3.412 
+#12 3.412 Tip: Curious about the SQL queries Prisma ORM generates? Optimize helps you enhance your visibility: https://pris.ly/tip-2-optimize
+#12 3.412 
+#12 DONE 3.7s
+
+#13 [9/9] RUN npm run build
+#13 0.569 
+#13 0.569 > api-server@1.0.0 build
+#13 0.569 > tsc
+#13 0.569 
+#13 DONE 3.8s
+
+#14 exporting to image
+#14 exporting layers
+#14 exporting layers 0.9s done
+#14 exporting manifest sha256:a567c0ad837c9921abca8a8420bf178495746674f8f4181db593cdb8879cec1f 0.0s done
+#14 exporting config sha256:f45575d8ff48a2ba9fd5585b4da6903c503d0c17254a9ee54d02a401ac7a2536 0.0s done
+#14 exporting attestation manifest sha256:61a09b15cfb6f724fa49b024c226b6fa5003d7bdf22e093e83412d3b3b3babc1 0.0s done
+#14 exporting manifest list sha256:fe29e4c665e75b6d0c7a19f64021319db547e2bf4269499bfcb08af6b6c95539 0.0s done
+#14 naming to docker.io/library/gameweaver-api:test done
+#14 unpacking to docker.io/library/gameweaver-api:test
+#14 unpacking to docker.io/library/gameweaver-api:test 0.2s done
+#14 DONE 1.3s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/k6lw3bqqiqahdy69tmcnduk7e

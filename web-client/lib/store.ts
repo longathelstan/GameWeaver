@@ -29,6 +29,8 @@ interface AppState {
     setTreeData: (data: TreeData[]) => void;
     selectedTopics: string[];
     setSelectedTopics: (topics: string[]) => void;
+    selectedBookId: number | null;
+    setSelectedBookId: (id: number) => void;
 
     // Step 2: Questions
     questions: Question[];
@@ -56,6 +58,8 @@ export const useAppStore = create<AppState>((set) => ({
     setTreeData: (data) => set({ treeData: data }),
     selectedTopics: [],
     setSelectedTopics: (topics) => set({ selectedTopics: topics }),
+    selectedBookId: null,
+    setSelectedBookId: (id) => set({ selectedBookId: id }),
 
     questions: [],
     setQuestions: (questions) => set({ questions }),

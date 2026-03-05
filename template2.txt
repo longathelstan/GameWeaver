@@ -1,0 +1,36 @@
+MẪU THÔNG TIN GỬI BÀI DỰ THI VÒNG 1
+CUỘC THI AI YOUNG GURU 
+(Dành cho các đội thi)
+THÔNG TIN ĐỘI THI:
+Tên đội thi:..................................................................................................
+Họ tên các thành viên đội thi :....................................................................
+Tên sản phẩm: ...........................................................................................
+Số điện thoại liên hệ (đại diện):..................................................................
+Email (đại diện):.........................................................................................
+
+ THÔNG TIN BÀI DỰ THI:
+1. Hình thức nộp bài: Nộp 01 file tài liệu (PDF) mô tả sản phẩm. Tên file lưu theo cú pháp: Tên đội + Tên sản phẩm.
+2. Cấu trúc tài liệu nộp: Bao gồm 5 mục (không giới hạn số từ):
+- Phần 1: Mô tả vấn đề:
++ Mô tả những vấn đề thực tiễn của cuộc sống (ví dụ: chuyện làng nghề nơi bạn sinh sống, chuyện quản lý nhân sự của mẹ, chuyện học tập của cá nhân bạn...).
++ Yêu cầu viết rõ bối cảnh để Ban Giám khảo hiểu rõ được tầm quan trọng của vấn đề.
+- Phần 2: Cách thức tiếp cận: Mô tả quy trình dùng công nghệ/AI để giải quyết vấn đề nêu trên:
++ Ý tưởng của giải pháp là gì
++ Sử dụng công nghệ/công cụ AI nào
++ Quy trình thực hiện ra sao
+
+Phần 3: Mô tả sản phẩm: 
++ Hình thức thể hiện: (Ví dụ: Giao diện App/Web; Bố cục Poster/Tranh; Thời lượng & Định dạng Video/Bài hát; Cấu trúc tài liệu...).
++ Nội dung & Công năng: (Ví dụ: Các tính năng xử lý chính; Thông điệp truyền tải; Cốt truyện/Kịch bản; Lời bài hát...).
++  Cách thức sử dụng/Vận hành: (Ví dụ: Người dùng sẽ tương tác với sản phẩm như thế nào? Hoặc sản phẩm được áp dụng vào thực tế ra sao?).
++ Nội dung khác (nếu có)
+
+Phần 4: Hiệu quả mang lại:
++ Giá trị thực tế
++ Phạm vi ảnh hưởng
++ Tính mới so với các giải pháp cũ (nếu có)
+
+Phần 5: Phụ lục:
++ Link truy cập đến sản phẩm
++ Link video giới thiệu sản phẩm (nếu có)
++ Link truy cập đến bản mô phỏng của sản phẩm (prototype) (nếu có)

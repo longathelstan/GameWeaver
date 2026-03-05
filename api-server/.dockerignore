@@ -1,0 +1,10 @@
+node_modules
+.env
+dist
+build.log
+build2.log
+build3.log
+build_cmd.log
+test_data.json
+fix_structure.ts
+verify_script.js

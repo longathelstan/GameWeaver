@@ -6,7 +6,7 @@ async function verify() {
     const FormData = (await import('formdata-node')).FormData;
     const { fileFromPath } = await import('formdata-node/file-from-path');
 
-    const baseUrl = 'http://localhost:3001/api';
+    const baseUrl = 'http://localhost:3002/api';
 
     console.log('1. Testing Ingestion...');
     if (process.argv.includes('--skip-ingest')) {
@@ -29,10 +29,12 @@ async function verify() {
 
     console.log('\n2. Testing Retrieval...');
     try {
+        const bookIdToUse = typeof ingestData !== 'undefined' && ingestData.bookId ? ingestData.bookId : 1;
+        console.log(`Using bookId=${bookIdToUse} for retrieval test`);
         const genRes = await fetch(`${baseUrl}/generate-questions`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ topics: ['Văn Lang'], quantity: 1 })
+            body: JSON.stringify({ topics: ['Văn Lang'], quantity: 1, bookId: bookIdToUse })
         });
         const genData = await genRes.json();
         console.log('Generate Response:', JSON.stringify(genData, null, 2));

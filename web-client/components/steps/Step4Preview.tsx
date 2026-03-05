@@ -1,14 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useAppStore } from '@/lib/store';
-import { getEnv } from '@/lib/env';
+import { generateGameCode, refineGameCode, saveGame } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Download, Code, Play, Send, Sparkles, RefreshCw } from 'lucide-react';
+import { Loader2, Download, Code, Play, Send, Sparkles, RefreshCw, Save, CheckCircle2 } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import { Sandpack } from "@codesandbox/sandpack-react";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 
 interface Message {
@@ -28,6 +27,8 @@ const Step4Preview = () => {
 
     const [isGenerating, setIsGenerating] = useState(false);
     const [isRefining, setIsRefining] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveSuccess, setSaveSuccess] = useState(false);
     const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview');
     const [chatInput, setChatInput] = useState('');
     const [messages, setMessages] = useState<Message[]>([
@@ -41,21 +42,12 @@ const Step4Preview = () => {
     const scrollAreaRef = useRef<HTMLDivElement>(null);
 
     const generateCode = React.useCallback(async () => {
+        if (!selectedGameType) return;
         setIsGenerating(true);
+        setSaveSuccess(false);
         try {
-            const res = await fetch(`${getEnv('NEXT_PUBLIC_BACKEND_URL')}/api/generate-game-code`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    gameType: selectedGameType,
-                    questions,
-                    customPrompt: customGamePrompt
-                }),
-            });
-            const data = await res.json();
-            if (res.ok) {
-                setGeneratedCode(data.code);
-            }
+            const data = await generateGameCode(selectedGameType, questions, customGamePrompt);
+            setGeneratedCode(data.code);
         } catch (error) {
             console.error('Error generating code:', error);
         } finally {
@@ -78,40 +70,37 @@ const Step4Preview = () => {
         setIsRefining(true);
 
         try {
-            const res = await fetch(`${getEnv('NEXT_PUBLIC_BACKEND_URL')}/api/refine-game-code`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    currentCode: generatedCode,
-                    instruction: userMsg.content
-                }),
-            });
-            const data = await res.json();
-            if (res.ok) {
-                setGeneratedCode(data.code);
-                setMessages(prev => [...prev, {
-                    id: (Date.now() + 1).toString(),
-                    role: 'ai',
-                    content: 'Đã cập nhật game theo yêu cầu của bạn! Hãy kiểm tra bên phần Xem trước nhé.'
-                }]);
-                // Switch to preview tab to see changes
-                setActiveTab('preview');
-            } else {
-                setMessages(prev => [...prev, {
-                    id: (Date.now() + 1).toString(),
-                    role: 'ai',
-                    content: 'Xin lỗi, có lỗi xảy ra khi cập nhật game. Vui lòng thử lại.'
-                }]);
-            }
-        } catch (error) {
-            console.error('Error refining code:', error);
+            const data = await refineGameCode(generatedCode, userMsg.content);
+            setGeneratedCode(data.code);
             setMessages(prev => [...prev, {
                 id: (Date.now() + 1).toString(),
                 role: 'ai',
-                content: 'Xin lỗi, có lỗi xảy ra khi kết nối với server.'
+                content: 'Đã cập nhật game theo yêu cầu của bạn! Hãy kiểm tra bên phần Xem trước nhé.'
+            }]);
+            setActiveTab('preview');
+        } catch {
+            setMessages(prev => [...prev, {
+                id: (Date.now() + 1).toString(),
+                role: 'ai',
+                content: 'Xin lỗi, có lỗi xảy ra. Vui lòng thử lại.'
             }]);
         } finally {
             setIsRefining(false);
+        }
+    };
+
+    const handleSaveGame = async () => {
+        if (!generatedCode || isSaving) return;
+        setIsSaving(true);
+        try {
+            const gameName = `${selectedGameType || 'Game'} - ${new Date().toLocaleDateString('vi-VN')}`;
+            await saveGame(gameName, selectedGameType || 'Unknown', generatedCode);
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 4000);
+        } catch (err) {
+            console.error('Error saving game:', err);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -218,6 +207,21 @@ const Step4Preview = () => {
                         <Button variant="outline" size="sm" onClick={generateCode} disabled={isGenerating}>
                             {isGenerating ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
                             <span className="ml-2 hidden sm:inline">Tạo lại</span>
+                        </Button>
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={handleSaveGame}
+                            disabled={!generatedCode || isSaving}
+                        >
+                            {isSaving ? (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : saveSuccess ? (
+                                <CheckCircle2 className="h-3 w-3 text-green-500" />
+                            ) : (
+                                <Save className="h-3 w-3" />
+                            )}
+                            <span className="ml-2 hidden sm:inline">{saveSuccess ? 'Đã lưu!' : 'Lưu game'}</span>
                         </Button>
                         <Button size="sm" onClick={handleDownload} disabled={!generatedCode}>
                             <Download className="h-3 w-3 mr-1.5" />

@@ -1,172 +1,178 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
+import { z } from 'zod';
 import { flashModel, proModel } from '../utils/gemini';
 import { retrieveContext } from '../utils/ragUtils';
+import { AppError } from '../middlewares/errorHandler';
 
-export const generateQuestionsController = async (req: Request, res: Response) => {
+// ── Schemas ──────────────────────────────────────────────────────────────────
+
+const GenerateQuestionsSchema = z.object({
+  topics: z.array(z.string().min(1)).min(1, 'At least one topic is required.'),
+  quantity: z.number().int().min(1).max(20).default(5),
+  bookId: z.number().int().positive('bookId is required.'),
+});
+
+const SuggestGameSchema = z.object({
+  questions: z.array(z.object({}).passthrough()).min(1, 'At least one question required.'),
+});
+
+const GenerateGameCodeSchema = z.object({
+  gameType: z.string().min(1, 'gameType is required.'),
+  questions: z.array(z.object({}).passthrough()).min(1),
+  customPrompt: z.string().optional(),
+});
+
+const RefineGameCodeSchema = z.object({
+  currentCode: z.string().min(1, 'currentCode is required.'),
+  instruction: z.string().min(1, 'instruction is required.'),
+});
+
+// ── Helper ────────────────────────────────────────────────────────────────────
+
+const parseJsonFromAI = (text: string): unknown => {
+  const clean = text.replace(/```json/g, '').replace(/```/g, '').trim();
+  return JSON.parse(clean);
+};
+
+// ── Controllers ───────────────────────────────────────────────────────────────
+
+export const generateQuestionsController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { topics, quantity = 5 } = req.body;
-
-    if (!topics || !Array.isArray(topics)) {
-      return res.status(400).json({ message: 'Invalid topics provided.' });
+    const parsed = GenerateQuestionsSchema.safeParse(req.body);
+    if (!parsed.success) {
+      throw new AppError(parsed.error.issues.map((e) => e.message).join(', '), 400);
     }
+    const { topics, quantity, bookId } = parsed.data;
 
-    // Retrieve context for the selected topics
-    // In a real app, we would iterate over topics and aggregate context
-    const context = await retrieveContext(topics.join(' '));
-
+    const context = await retrieveContext(topics.join(' '), bookId);
     if (!context || context.trim().length === 0) {
-      console.warn('Context is empty. Skipping generation to avoid hallucinations.');
-      return res.status(400).json({
-        message: 'Unable to retrieve context from the uploaded file. This might be due to API rate limits or the content not matching the selected topics.'
-      });
+      throw new AppError(
+        'Không thể lấy nội dung từ sách đã chọn. Hãy đảm bảo sách đã được nạp dữ liệu.',
+        422
+      );
     }
 
     const prompt = `
-      Based on the following context, generate ${quantity} multiple-choice questions.
-      
-      Context:
-      ${context}
-      
-      Return the result as a JSON array of objects with the following structure:
-      [
-        {
-          "id": "1",
-          "question": "Question text",
-          "options": ["Option A", "Option B", "Option C", "Option D"],
-          "correctAnswer": "Option A"
-        }
-      ]
-      
-      Only return the JSON array.
-    `;
+Based on the following Vietnamese educational context, generate exactly ${quantity} multiple-choice questions in Vietnamese.
+
+Context:
+${context}
+
+Return ONLY a valid JSON array. Each object must have:
+[
+  {
+    "id": "1",
+    "question": "Câu hỏi",
+    "options": ["Lựa chọn A", "Lựa chọn B", "Lựa chọn C", "Lựa chọn D"],
+    "correctAnswer": "Lựa chọn A"
+  }
+]
+        `.trim();
 
     const result = await flashModel.generateContent(prompt);
-    const response = result.response;
-    const text = response.text();
-    const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    const questions = JSON.parse(cleanText);
+    const questions = parseJsonFromAI(result.response.text());
 
-    res.status(200).json({ questions });
-  } catch (error) {
-    console.error('Error generating questions:', error);
-    res.status(500).json({ message: 'Error generating questions.' });
+    res.status(200).json({ success: true, questions });
+  } catch (err) {
+    next(err);
   }
 };
 
-export const suggestGameController = async (req: Request, res: Response) => {
+export const suggestGameController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { questions } = req.body;
+    const parsed = SuggestGameSchema.safeParse(req.body);
+    if (!parsed.success) throw new AppError(parsed.error.issues[0].message, 400);
+    const { questions } = parsed.data;
 
     const prompt = `
-      Analyze the following questions and suggest 3 suitable educational game types.
-      
-      Constraints:
-      1. At least one suggestion MUST be a 3D game (using React Three Fiber / Three.js).
-      2. The other suggestions can be 2D (using Framer Motion, Canvas, or standard React).
-      3. Ensure the game mechanics fit the question type (e.g., multiple choice).
-      
-      Questions:
-      ${JSON.stringify(questions).substring(0, 2000)}
-      
-      Return a JSON array of suggestions:
-      [
-        {
-          "type": "3D Runner",
-          "title": "Space Runner 3D",
-          "description": "Navigate a spaceship through obstacles...",
-          "reason": "Engaging 3D experience for reviewing concepts..."
-        }
-      ]
-      
-      Only return the JSON array.
-    `;
+Analyze these educational questions and suggest 3 suitable HTML5 game types.
+
+Constraints:
+1. At least one suggestion MUST be a 3D game using Three.js.
+2. Others can be 2D (Canvas or vanilla JS).
+
+Questions sample:
+${JSON.stringify(questions.slice(0, 3))}
+
+Return ONLY a JSON array:
+[
+  {
+    "type": "3D Runner",
+    "title": "Space Runner 3D",
+    "description": "...",
+    "reason": "..."
+  }
+]
+        `.trim();
 
     const result = await flashModel.generateContent(prompt);
-    const response = result.response;
-    const text = response.text();
-    const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    const suggestions = JSON.parse(cleanText);
+    const suggestions = parseJsonFromAI(result.response.text());
 
-    res.status(200).json({ suggestions });
-  } catch (error) {
-    console.error('Error suggesting games:', error);
-    res.status(500).json({ message: 'Error suggesting games.' });
+    res.status(200).json({ success: true, suggestions });
+  } catch (err) {
+    next(err);
   }
 };
 
-export const generateGameCodeController = async (req: Request, res: Response) => {
+export const generateGameCodeController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { gameType, questions, customPrompt } = req.body;
+    const parsed = GenerateGameCodeSchema.safeParse(req.body);
+    if (!parsed.success) throw new AppError(parsed.error.issues[0].message, 400);
+    const { gameType, questions, customPrompt } = parsed.data;
 
     const prompt = `
-      Create a COMPLETE, SINGLE-FILE HTML5 game for a "${gameType}" game.
-      
-      Game Data (Questions):
-      ${JSON.stringify(questions)}
-      
-      User Custom Instructions:
-      ${customPrompt || 'None'}
-      
-      Requirements:
-      1. Output a single valid HTML file starting with <!DOCTYPE html>.
-      2. Use Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"></script>
-      3. DO NOT USE REACT. Use Vanilla JavaScript (ES6+).
-      4. Use Lucide Icons via CDN (unpkg) if needed, or SVG strings.
-      5. If the game is 3D:
-         - Use Three.js via CDN: <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-         - Do NOT use React Three Fiber. Use raw Three.js.
-      6. Structure:
-         - <head> with Tailwind script and basic styles.
-         - <body> with game container.
-         - <script> tag at the end of body containing all game logic.
-      7. The game must be fully functional, self-contained, and handle the provided questions.
-      8. Handle game states: Start Screen -> Playing -> End Screen (Score).
-      9. Return ONLY the raw HTML string. Do not wrap in markdown code blocks.
-    `;
+Create a COMPLETE, SINGLE-FILE HTML5 educational game of type "${gameType}".
+
+Game Data (Questions):
+${JSON.stringify(questions)}
+
+User Instructions: ${customPrompt || 'None'}
+
+Requirements:
+1. Output a single valid HTML file starting with <!DOCTYPE html>.
+2. Use Tailwind CSS via CDN: <script src="https://cdn.tailwindcss.com"></script>
+3. Use Vanilla JavaScript (ES6+). NO REACT.
+4. If 3D: use Three.js via CDN: <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+5. Handle game states: Start Screen → Playing → End Screen (with score).
+6. Questions must be in Vietnamese.
+7. Return ONLY the raw HTML. No markdown code blocks.
+        `.trim();
 
     const result = await proModel.generateContent(prompt);
-    const response = result.response;
-    const text = response.text();
-    const code = text.replace(/```html/g, '').replace(/```tsx/g, '').replace(/```jsx/g, '').replace(/```/g, '').trim();
+    const code = result.response.text().replace(/```html|```tsx|```jsx|```/g, '').trim();
 
-    res.status(200).json({ code });
-  } catch (error) {
-    console.error('Error generating game code:', error);
-    res.status(500).json({ message: 'Error generating game code.' });
+    res.status(200).json({ success: true, code });
+  } catch (err) {
+    next(err);
   }
 };
 
-export const refineGameCodeController = async (req: Request, res: Response) => {
+export const refineGameCodeController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { currentCode, instruction } = req.body;
-
-    if (!currentCode || !instruction) {
-      return res.status(400).json({ message: 'Missing currentCode or instruction.' });
-    }
+    const parsed = RefineGameCodeSchema.safeParse(req.body);
+    if (!parsed.success) throw new AppError(parsed.error.issues[0].message, 400);
+    const { currentCode, instruction } = parsed.data;
 
     const prompt = `
-      You are an expert game developer.
-      
-      User Request: "${instruction}"
-      
-      Current Game Code (HTML/JS):
-      ${currentCode}
-      
-      Task:
-      1. Modify the Current Game Code to fulfill the User Request.
-      2. Ensure the code remains a SINGLE valid HTML file.
-      3. Do not remove existing functionality unless asked.
-      4. Return ONLY the raw HTML string. Do not wrap in markdown.
-    `;
+You are an expert game developer.
+
+User Request: "${instruction}"
+
+Current Game Code (HTML/JS):
+${currentCode}
+
+Task:
+1. Modify the code to fulfill the User Request.
+2. Keep it a SINGLE valid HTML file.
+3. Do not remove existing functionality unless asked.
+4. Return ONLY the raw HTML string. No markdown.
+        `.trim();
 
     const result = await proModel.generateContent(prompt);
-    const response = result.response;
-    const text = response.text();
-    const code = text.replace(/```html/g, '').replace(/```tsx/g, '').replace(/```jsx/g, '').replace(/```/g, '').trim();
+    const code = result.response.text().replace(/```html|```tsx|```jsx|```/g, '').trim();
 
-    res.status(200).json({ code });
-  } catch (error) {
-    console.error('Error refining game code:', error);
-    res.status(500).json({ message: 'Error refining game code.' });
+    res.status(200).json({ success: true, code });
+  } catch (err) {
+    next(err);
   }
 };

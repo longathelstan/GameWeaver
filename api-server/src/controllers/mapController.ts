@@ -1,45 +1,46 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
+import { z } from 'zod';
 import { flashModel } from '../utils/gemini';
+import { AppError } from '../middlewares/errorHandler';
 
-export const mapContentController = async (req: Request, res: Response) => {
+const MapContentSchema = z.object({
+  data: z.union([z.array(z.any()), z.record(z.string(), z.any())]),
+});
+
+export const mapContentController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { data } = req.body;
+    const parsed = MapContentSchema.safeParse(req.body);
+    if (!parsed.success) throw new AppError('Invalid data provided for mapping.', 400);
+    const { data } = parsed.data;
 
-    if (!data) {
-      return res.status(400).json({ message: 'No data provided for mapping.' });
-    }
+    const dataPreview = JSON.stringify(data).substring(0, 10000);
 
-    // Prompt Gemini to analyze the structure
     const prompt = `
-      Analyze the following JSON data representing a textbook or educational content.
-      Return a hierarchical structure (Tree) suitable for a frontend Checkbox Tree component.
-      The structure should be:
-      [
-        {
-          "value": "unique_id",
-          "label": "Chapter Name / Lesson Name",
-          "children": [ ... ]
-        }
-      ]
-      
-      Only return the JSON array. Do not include markdown formatting.
-      
-      Data:
-      ${JSON.stringify(data).substring(0, 10000)} // Truncate to avoid token limit if necessary
-    `;
+Analyze the following JSON data representing a Vietnamese textbook.
+Return a hierarchical tree structure for a checkbox tree UI.
+
+Structure:
+[
+  {
+    "value": "unique_id",
+    "label": "Chapter or Lesson Name",
+    "children": [ ... ]
+  }
+]
+
+Return ONLY the JSON array. No markdown.
+
+Data:
+${dataPreview}
+        `.trim();
 
     const result = await flashModel.generateContent(prompt);
-    const response = result.response;
-    const text = response.text();
-
-    // Clean up markdown code blocks if present
+    const text = result.response.text();
     const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-
     const treeData = JSON.parse(cleanText);
 
-    res.status(200).json({ treeData });
-  } catch (error) {
-    console.error('Error mapping content:', error);
-    res.status(500).json({ message: 'Error mapping content.' });
+    res.status(200).json({ success: true, treeData });
+  } catch (err) {
+    next(err);
   }
 };

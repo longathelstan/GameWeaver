@@ -4,6 +4,7 @@ services:
   postgres:
     image: pgvector/pgvector:pg15
     container_name: gameweaver-db
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password123
@@ -12,28 +13,53 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d gameweaver" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   api-server:
     build: ./api-server
     container_name: gameweaver-api
+    restart: unless-stopped
     ports:
       - "3001:3001"
     environment:
       PORT: 3001
+      NODE_ENV: production
       DATABASE_URL: postgresql://postgres:password123@postgres:5432/gameweaver?schema=public
       GEMINI_API_KEY: ${GEMINI_API_KEY}
+      ALLOWED_ORIGINS: http://localhost:3000,${FRONTEND_URL:-}
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:3001/health || exit 1" ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   web-client:
     build: ./web-client
     container_name: gameweaver-web
+    restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
-      NEXT_PUBLIC_BACKEND_URL: http://localhost:3001
+      # Note: NEXT_PUBLIC_* vars are baked in at build time.
+      # For container-to-browser communication, this must be the host-accessible URL.
+      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL:-http://localhost:3001}
     depends_on:
-      - api-server
+      api-server:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:3000 || exit 1" ]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
 volumes:
   postgres_data:

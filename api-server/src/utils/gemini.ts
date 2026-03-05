@@ -13,6 +13,8 @@ const genAI = new GoogleGenerativeAI(apiKey || '');
 
 export const flashModel = genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
 export const proModel = genAI.getGenerativeModel({ model: 'gemini-3-pro-preview' });
-export const embeddingModel = genAI.getGenerativeModel({ model: 'text-embedding-004' });
+export const embeddingModel = genAI.getGenerativeModel({
+    model: "gemini-embedding-001",
+});
 
 export default genAI;

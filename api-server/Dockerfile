@@ -2,27 +2,27 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install OpenSSL for Prisma
-RUN apk -U add openssl
+# Install OpenSSL for Prisma and enable corepack for pnpm
+RUN apk -U add openssl && corepack enable && corepack prepare pnpm@latest --activate
 
-# Copy package files
-COPY package*.json ./
+# Copy package files and lockfile
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY prisma ./prisma/
 
 # Install dependencies
-RUN npm install
+RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .
 
 # Generate Prisma Client
-RUN npx prisma generate
+RUN pnpm exec prisma generate
 
 # Build TypeScript
-RUN npm run build
+RUN pnpm run build
 
 # Expose port
 EXPOSE 3001
 
 # Start command (includes DB push for quick setup)
-CMD ["sh", "-c", "npx prisma db push && npm start"]
+CMD ["sh", "-c", "pnpm exec prisma db push && pnpm start"]

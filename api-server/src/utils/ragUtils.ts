@@ -1,96 +1,80 @@
-import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
-import { PrismaVectorStore } from '@langchain/community/vectorstores/prisma';
+import crypto from 'crypto';
+import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { GoogleGenerativeAIEmbeddings } from '@langchain/google-genai';
 import { TaskType } from '@google/generative-ai';
-import { PrismaClient, Document, Prisma } from '@prisma/client';
+import prisma from '../lib/prisma';
 
-const prisma = new PrismaClient();
-
-// Initialize embeddings model
+// Initialize embeddings model once
 const embeddings = new GoogleGenerativeAIEmbeddings({
-    modelName: 'text-embedding-004',
+    modelName: 'gemini-embedding-001',
     taskType: TaskType.RETRIEVAL_DOCUMENT,
     apiKey: process.env.GEMINI_API_KEY,
 });
 
-// Initialize PrismaVectorStore
-let vectorStore: any;
-try {
-    vectorStore = PrismaVectorStore.withModel<Document>(prisma).create(
-        embeddings,
-        {
-            prisma: Prisma,
-            tableName: 'Document',
-            vectorColumnName: 'embedding',
-            columns: {
-                id: PrismaVectorStore.IdColumn,
-                content: PrismaVectorStore.ContentColumn,
-            },
-        }
-    );
-    console.log('PrismaVectorStore initialized successfully.');
-} catch (error) {
-    console.error('Failed to initialize PrismaVectorStore:', error);
-}
+/**
+ * Chunk text and vectorize into the Document table.
+ * Each chunk is tagged with bookId so we can scope retrieval per-book.
+ */
+export const processAndVectorizeContent = async (text: string, bookId: number): Promise<void> => {
+    const splitter = new RecursiveCharacterTextSplitter({
+        chunkSize: 1000,
+        chunkOverlap: 200,
+    });
 
-export const processAndVectorizeContent = async (text: string) => {
-    try {
-        const splitter = new RecursiveCharacterTextSplitter({
-            chunkSize: 1000,
-            chunkOverlap: 200,
-        });
+    const docs = await splitter.createDocuments([text]);
+    console.log(`[RAG] Vectorizing ${docs.length} chunks for bookId=${bookId}...`);
 
-        const docs = await splitter.createDocuments([text]);
-        console.log(`Creating vector store with ${docs.length} chunks...`);
-
-        for (const doc of docs) {
-            const embedding = await embeddings.embedQuery(doc.pageContent);
-
-            // Use raw SQL for vector insertion
-            const vectorString = `[${embedding.join(',')}]`;
-            const id = require('crypto').randomUUID();
-
-            await prisma.$executeRaw`
-                INSERT INTO "Document" ("id", "content", "embedding", "metadata")
-                VALUES (${id}, ${doc.pageContent}, ${vectorString}::vector, ${doc.metadata}::jsonb)
-            `;
-        }
-
-        console.log('Vector store updated successfully (Manual Mode).');
-        return true;
-    } catch (error) {
-        console.error('Error vectorizing content:', error);
-        throw error;
-    }
-};
-
-export const retrieveContext = async (query: string, k: number = 4) => {
-    try {
-        console.log(`Searching for context with query: "${query}"`);
-        const embedding = await embeddings.embedQuery(query);
+    for (const doc of docs) {
+        const embedding = await embeddings.embedQuery(doc.pageContent);
         const vectorString = `[${embedding.join(',')}]`;
+        const id = crypto.randomUUID();
+        const metadata = { bookId, ...doc.metadata };
 
-        const results = await prisma.$queryRaw`
-            SELECT content, 1 - (embedding <=> ${vectorString}::vector) as similarity
-            FROM "Document"
-            ORDER BY embedding <=> ${vectorString}::vector
-            LIMIT ${k}
+        await prisma.$executeRaw`
+            INSERT INTO "Document" ("id", "content", "embedding", "metadata")
+            VALUES (${id}, ${doc.pageContent}, ${vectorString}::vector, ${JSON.stringify(metadata)}::jsonb)
         `;
-
-        console.log(`Found ${(results as any[]).length} documents.`);
-        return (results as any[]).map((doc: any) => doc.content).join('\n\n');
-    } catch (error) {
-        console.error('Error retrieving context:', error);
-        return '';
     }
+
+    console.log(`[RAG] Done vectorizing for bookId=${bookId}.`);
 };
 
-// Helper to clear vector store (optional, be careful in production)
-export const clearVectorStore = async () => {
-    try {
+/**
+ * Retrieve context chunks relevant to the query, scoped to a specific book.
+ */
+export const retrieveContext = async (
+    query: string,
+    bookId: number,
+    k = 5
+): Promise<string> => {
+    console.log(`[RAG] Searching context: "${query}" (bookId=${bookId}, k=${k})`);
+
+    const embedding = await embeddings.embedQuery(query);
+    const vectorString = `[${embedding.join(',')}]`;
+
+    const results = await prisma.$queryRaw<{ content: string; similarity: number }[]>`
+        SELECT content, 1 - (embedding <=> ${vectorString}::vector) AS similarity
+        FROM "Document"
+        WHERE metadata->>'bookId' = ${String(bookId)}
+        ORDER BY embedding <=> ${vectorString}::vector
+        LIMIT ${k}
+    `;
+
+    console.log(`[RAG] Found ${results.length} chunks.`);
+    return results.map((r) => r.content).join('\n\n');
+};
+
+/**
+ * Clear all vector chunks for a specific book (or all if bookId not provided).
+ */
+export const clearVectorStore = async (bookId?: number): Promise<void> => {
+    if (bookId !== undefined) {
+        await prisma.$executeRaw`
+            DELETE FROM "Document" WHERE metadata->>'bookId' = ${String(bookId)}
+        `;
+        console.log(`[RAG] Cleared vector store for bookId=${bookId}.`);
+    } else {
         await prisma.document.deleteMany({});
-        console.log('Vector store cleared successfully.');
-    } catch (error) {
-        console.error('Error clearing vector store:', error);
+        console.log('[RAG] Cleared entire vector store.');
     }
 };

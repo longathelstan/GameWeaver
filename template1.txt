@@ -1,0 +1,223 @@
+SỞ GIÁO DỤC VÀ ĐÀO TẠO HÀ TĨNH
+BÁO CÁO NGHIÊN CỨU KHOA HỌC
+ĐỀ TÀI
+ỨNG DỤNG NỀN TẢNG AI ĐỂ XÂY DỰNG CÁC TRÒ CHƠI HỖ TRỢ DẠY HỌC (GAMEWEAVER)
+Lĩnh vực: Phần mềm hệ thống
+Hà Tĩnh - Tháng 12/2025
+
+MỤC LỤC
+Phần I. MỞ ĐẦU
+Lý do chọn đề tài
+Tổng quan lịch sử nghiên cứu
+Mục tiêu nghiên cứu
+Phạm vi nghiên cứu
+Phương pháp nghiên cứu
+Giả thiết khoa học
+Đóng góp (tính sáng tạo) của đề tài
+Nhiệm vụ nghiên cứu của đề tài
+Cấu trúc của đề tài
+Phần II. NỘI DUNG
+Cơ sở lý luận và cơ sở thực tiễn của việc nghiên cứu đề tài1.1. Cơ sở lý luận về ứng dụng AI trong Giáo dục1.2. Thực tiễn yêu cầu công cụ hỗ trợ giáo viên
+Nền tảng GameWeaver: Ứng dụng AI xây dựng trò chơi hỗ trợ dạy học2.1. Link sản phẩm và Mã nguồn2.2. Các chức năng chính2.3. Luồng hoạt động (User Flow)
+Kết quả và thảo luận3.1. Đánh giá tính năng và hiệu quả3.2. Kết quả khảo sát thực tiễn
+Phần III. KẾT LUẬN VÀ KIẾN NGHỊ
+TÀI LIỆU THAM KHẢO
+
+Phần I. MỞ ĐẦU
+1. Lý do chọn đề tài
+Phương pháp dạy học ngày càng được cải tiến theo hướng tích cực hóa hoạt động nhận thức của học sinh. Việc sử dụng trò chơi trong quá trình dạy học là một cách hữu hiệu để kích thích sự tìm tòi kiến thức và tiếp nhận tri thức. Tuy nhiên, việc thiết kế trò chơi giáo dục truyền thống tốn nhiều thời gian và công sức của giáo viên.
+Ngày nay, ứng dụng Trí tuệ nhân tạo (AI), đặc biệt là các mô hình ngôn ngữ lớn (LLM) như Google Gemini, ngày càng trở nên phổ biến và hiệu quả. Việc sử dụng các công cụ tích hợp AI để thiết kế trò chơi dạy học giúp giáo viên:
+Tiết kiệm thời gian thiết kế nội dung thủ công.
+Thiết kế được nhiều trò chơi sinh động, hiệu quả với các loại game 3D, 2D đa dạng.
+Dễ dàng tích hợp trò chơi phù hợp với chương trình Giáo dục phổ thông 2018 theo từng nội dung cụ thể.
+Vì những lý do trên, nhóm chúng em chọn đề tài: “Ứng dụng nền tảng AI để xây dựng các trò chơi hỗ trợ dạy học (GameWeaver)”.
+2. Tổng quan lịch sử nghiên cứu
+“Ứng dụng nền tảng AI để xây dựng các trò chơi hỗ trợ dạy học” là một lĩnh vực mới mẻ và đầy tiềm năng. Trong bối cảnh chuyển đổi số giáo dục, việc tích hợp AI vào trò chơi học tập được xem là giải pháp để nâng cao mức độ tương tác, cá nhân hóa nội dung và tăng hiệu quả học tập.
+Các công trình ngoài nước: Nhiều nghiên cứu tập trung vào việc sử dụng AI để cá nhân hóa nội dung học tập, ví dụ: AI tạo câu hỏi dựa trên độ khó, AI phân tích hành vi người học để điều chỉnh luật chơi (Adaptive Learning Games).
+Các công trình trong nước: Chủ yếu tập trung vào việc sử dụng các công cụ tạo game sẵn có (như Kahoot!, Quizizz) hoặc ứng dụng các mô hình ngôn ngữ lớn (ví dụ: ChatGPT, Gemini) để hỗ trợ soạn giáo án. Tuy nhiên, việc xây dựng một nền tảng tự động hóa hoàn toàn quy trình từ trích xuất dữ liệu Sách Giáo Khoa (SGK) đến sinh mã nguồn trò chơi hoàn chỉnh và có cơ chế kiểm duyệt sư phạm (Human-in-the-loop) vẫn còn hạn chế.
+Chính vì thế, chúng em quyết định xây dựng nền tảng GameWeaver nhằm hỗ trợ giáo viên tự động hóa việc tạo game, giúp học sinh chủ động tham gia và tăng khả năng ghi nhớ kiến thức.
+3. Mục tiêu nghiên cứu
+Đề tài tập trung thực hiện xây dựng nền tảng GameWeaver với các mục tiêu:
+Tạo Game bằng AI: Cho phép người dùng tạo trò chơi bằng AI theo nhu cầu và đề xuất, phục vụ việc trực quan hóa các kiến thức phổ thông.
+Tích hợp SGK: Xây dựng cơ chế trích xuất dữ liệu từ Sách Giáo Khoa để tự động tạo câu hỏi chính xác, phù hợp với từng chương/bài cụ thể.
+Cá nhân hóa và Tùy biến: Tự động đề xuất loại trò chơi phù hợp và cho phép giáo viên tùy chỉnh câu hỏi, luật chơi, giao diện (game 3D, 2D) trước khi sinh mã nguồn.
+Phát triển kỹ năng: Rèn luyện kỹ năng lập trình, phân tích nội dung bài học và ứng dụng công nghệ mới.
+4. Phạm vi nghiên cứu
+Đối tượng: Các trò chơi học tập có tích hợp trí tuệ nhân tạo (AI) nhằm hỗ trợ quá trình dạy học ở bậc phổ thông.
+Tính năng AI cốt lõi: Sinh câu hỏi tự động và sinh mã nguồn game hoàn chỉnh (Code Generation) sử dụng mô hình Gemini.
+Phạm vi dữ liệu: Giới hạn vào một số chủ đề kiến thức cụ thể theo từng mục, từng bài, từng chương của các môn học trong chương trình SGK. Demo hoàn thành cho môn Toán lớp 10 (Sách Cánh diều).
+Nền tảng triển khai: Web và các thiết bị thông minh phổ biến như điện thoại, máy tính (do game được sinh bằng mã web).
+5. Phương pháp nghiên cứu
+Nghiên cứu tài liệu: Nghiên cứu về kiến trúc RAG (Retrieval-Augmented Generation), mô hình ngôn ngữ lớn (Gemini), và các phương pháp dạy học tích cực.
+Phân tích & Thiết kế: Phân tích nhu cầu của giáo viên, thiết kế cơ sở dữ liệu và luồng người dùng (User Flow) cho nền tảng GameWeaver.
+Phát triển thực nghiệm: Xây dựng nền tảng GameWeaver sử dụng Next.js, tích hợp API Google Gemini và triển khai thử nghiệm trên môi trường Web.
+Thực nghiệm sư phạm: Thử nghiệm sản phẩm với một số giáo viên để thu thập phản hồi, đánh giá hiệu quả hỗ trợ dạy học.
+6. Giả thiết khoa học
+Nền tảng GameWeaver hoàn thành sẽ hỗ trợ dạy học giúp tăng mức độ hứng thú và cải thiện hiệu quả học tập cho học sinh so với phương pháp trò chơi truyền thống.
+Việc ứng dụng AI sinh mã nguồn sẽ giúp giáo viên giảm thiểu 70-80% thời gian cần thiết để thiết kế một trò chơi giáo dục chất lượng.
+Việc tham gia đề tài sẽ giúp nhóm nghiên cứu rèn luyện kĩ năng lập trình, kĩ năng phân tích nội dung bài học và thúc đẩy phong trào đổi mới dạy học bằng ứng dụng AI.
+7. Đóng góp (tính sáng tạo) của đề tài
+Tính sáng tạo cốt lõi của đề tài nằm ở việc xây dựng một quy trình tự động hóa hoàn chỉnh và khép kín cho việc tạo game giáo dục:
+Kiến trúc RAG tích hợp SGK: Hệ thống không chỉ sinh nội dung chung chung mà còn trích xuất kiến thức chính xác từ file SGK (JSON/PDF) để làm căn cứ cho việc sinh câu hỏi, đảm bảo tính chính thống và phù hợp với chương trình.
+Quy trình Human-in-the-loop chuyên biệt: Cho phép giáo viên là "người kiểm duyệt cuối cùng" để tinh chỉnh câu hỏi, luật chơi do AI tạo ra, đảm bảo chất lượng sư phạm.
+Tự động sinh mã nguồn game hoàn chỉnh: AI không chỉ tạo ra nội dung mà còn sinh ra mã nguồn html của trò chơi theo yêu cầu, cho phép giáo viên xem trước, chỉnh sửa và tải về để sử dụng trực tiếp mà không cần biết lập trình.
+8. Nhiệm vụ nghiên cứu của đề tài
+Để đạt được mục tiêu trên, đề tài cần làm các nhiệm vụ sau:
+Nghiên cứu kiến trúc RAG và mô hình Gen AI (Gemini) để tạo game giáo dục.
+Thiết kế và tối ưu các Prompt để AI sinh mã game bằng HTML, CSS, JavaScript phù hợp với mục tiêu dạy học.
+Xây dựng cơ sở dữ liệu (Database) quản lý game: lưu trữ mã nguồn, thông tin user, prompt, thời gian tạo, thể loại game, tổ hợp môn học, cấp lớp/khối.
+Thiết kế giao diện Admin Panel và cơ chế hiển thị game (GameWeaver) sao cho thân thiện với người dùng (giáo viên).
+Đánh giá hiệu quả và khả năng cá nhân hóa của game dựa trên dữ liệu lưu trữ và phản hồi của người dùng.
+9. Cấu trúc của đề tài
+Đề tài được cấu trúc thành 3 phần chính:
+Phần I. Mở đầu: Giới thiệu lý do, mục tiêu, phạm vi và phương pháp nghiên cứu.
+Phần II. Nội dung: Trình bày cơ sở lý luận, mô tả chi tiết nền tảng GameWeaver (công nghệ, chức năng, luồng hoạt động) và kết quả thực hiện.
+Phần III. Kết luận và Kiến nghị: Tổng kết các kết quả đạt được, đánh giá tính khả thi và đề xuất hướng phát triển tiếp theo.
+
+Phần II. NỘI DUNG
+1. Cơ sở lý luận và cơ sở thực tiễn của việc nghiên cứu đề tài
+1.1. Cơ sở lý luận về ứng dụng AI trong Giáo dục
+Trong bối cảnh Chương trình Giáo dục phổ thông 2018 đang thúc đẩy đổi mới phương pháp dạy học theo hướng phát huy năng lực người học, việc ứng dụng công nghệ, đặc biệt là Trí tuệ nhân tạo (AI), trở nên cấp thiết. AI, thông qua các mô hình ngôn ngữ lớn (LLM) như Google Gemini, có khả năng:
+Tự động hóa việc tạo nội dung: Sinh câu hỏi, tình huống, kịch bản học tập.
+Cá nhân hóa trải nghiệm: Trích xuất và tùy biến nội dung câu hỏi dựa trên kiến thức được trích xuất từ sách giáo khoa.
+Sinh mã nguồn (Code Generation): Tự động tạo mã nguồn của trò chơi web (HTML/CSS/JS) từ mô tả ngôn ngữ tự nhiên.
+Việc tích hợp AI vào trò chơi giáo dục không chỉ tăng tính hứng thú, mà còn giúp trò chơi trở nên linh hoạt và có khả năng phản hồi theo thời gian thực.
+1.2. Thực tiễn yêu cầu công cụ hỗ trợ giáo viên
+Việc thiết kế trò chơi giáo dục truyền thống tốn nhiều thời gian và công sức của giáo viên. Mặc dù các công cụ AI đã phổ biến, việc kết hợp chúng với nguồn dữ liệu chính thống (Sách Giáo Khoa) và quy trình kiểm duyệt sư phạm vẫn còn nhiều hạn chế.
+Thực tiễn đòi hỏi một nền tảng chuyên biệt có thể tự động hóa quy trình từ phân tích dữ liệu SGK, tạo câu hỏi chính xác, đến sinh mã nguồn trò chơi hoàn chỉnh, giúp giáo viên tiết kiệm thời gian, tập trung vào chuyên môn giảng dạy. Đây là lý do ra đời của nền tảng GameWeaver.
+2. Nền tảng GameWeaver: Ứng dụng AI xây dựng trò chơi hỗ trợ dạy học
+GameWeaver là một nền tảng Admin Panel chuyên dụng được thiết kế để tự động hóa quy trình tạo trò chơi giáo dục từ dữ liệu Sách Giáo Khoa (SGK) thông qua việc ứng dụng kiến trúc RAG (Retrieval-Augmented Generation) và mô hình ngôn ngữ lớn Google Gemini.
+2.1. Link sản phẩm và Mã nguồn
+Link mã nguồn (Source Code): Sản phẩm được phát triển và lưu trữ mã nguồn tại:https://github.com/longathelstan/GameWeaver
+Link sản phẩm Demo (Web): https://gameweaver.lowng.me/
+2.2. Các chức năng chính
+Nền tảng GameWeaver được xây dựng với mục tiêu giảm thiểu gánh nặng soạn thảo cho giáo viên và nâng cao chất lượng trò chơi học tập:
+Chức năng chính
+Mô tả
+Công nghệ ứng dụng
+Xử lý dữ liệu thông minh (RAG Integration)
+Hệ thống sử dụng RAG để truy xuất chính xác dữ liệu từ các file JSON/PDF SGK, tự động ánh xạ và phân rã dữ liệu thô thành cấu trúc bài học, chương cụ thể.
+RAG Architecture, Vector Database
+Sinh và Kiểm duyệt câu hỏi
+AI (Gemini) tạo bộ câu hỏi dựa trên số lượng yêu cầu. Cho phép giáo viên kiểm duyệt, chỉnh sửa trực tiếp hoặc yêu cầu AI tái tạo nội dung (Human-in-the-loop).
+Google Gemini, Human-in-the-loop
+Cơ chế đề xuất Game linh hoạt
+Game Suggest: AI tự động phân tích bộ câu hỏi và đề xuất loại game phù hợp nhất (3D Game, Quiz, Memory, Puzzle...). Custom Game: Cho phép người dùng nhập yêu cầu tùy biến để tạo ra luật chơi và giao diện.
+Google Gemini, Prompt Engineering
+Tự động sinh mã nguồn (Code Generation)
+Sử dụng Gemini để sinh mã nguồn game hoàn chỉnh bằng html (mã nguồn web). Hỗ trợ tính năng xem trước, tinh chỉnh mã nguồn (màu sắc, bố cục) và tải xuống gói cài đặt cuối cùng.
+Google Gemini Code Generation, html
+Quản lý kho game
+Lưu trữ các game đã tạo và hiển thị trong kho game cá nhân/chung, cho phép giáo viên tái sử dụng.
+Database (PostgreSQL)
+2.3. Luồng hoạt động (User Flow)
+Quy trình tạo game trên nền tảng GameWeaver được thực hiện qua 5 bước đơn giản:
+Khởi tạo và Truy xuất dữ liệu: Giáo viên đăng nhập, nhập yêu cầu và chọn nguồn dữ liệu SGK. Hệ thống sử dụng RAG để nạp và đánh chỉ mục dữ liệu.
+
+Lựa chọn phạm vi kiến thức: Giáo viên chọn các đơn vị kiến thức (bài học/trang) cần kiểm tra từ cây thư mục hiển thị.
+
+Sinh và Kiểm duyệt câu hỏi: AI tạo bộ câu hỏi. Giáo viên rà soát, chỉnh sửa hoặc yêu cầu AI viết lại cho đến khi chấp nhận.
+
+Đề xuất mô hình Game: Giáo viên chọn chế độ gợi ý tự động từ AI hoặc nhập mô tả game tùy chỉnh để tạo game theo ý muốn.
+
+Lập trình và Hoàn thiện: AI sinh mã nguồn html. Giáo viên kiểm thử, yêu cầu chỉnh sửa (màu sắc, bố cục, logic) và tải về mã nguồn hoàn thiện.
+
+3. Hình ảnh một số game được tạo từ gameweaver
+3.1. Sailboat Physics Quiz:
+
+3.2. 2D ARCADE QUIZ BLITZ:
+
+3.3. Pháo thủ lượng giác 3D:
+
+3.4. Vector Gate Runner:
+
+3.5. Vệ binh vector:
+
+3.6. Thuyền Trí Tuệ:
+
+3.7. 3D Vector Navigator: 
+
+3.8. ConceptNavigator
+
+4. Kết quả và thảo luận
+4.1. Đánh giá tính năng và hiệu quả
+Hoàn thành nhiệm vụ: Hệ thống GameWeaver đã hoàn thành các nhiệm vụ đề ra, đặc biệt là tự động hóa quy trình tạo game từ SGK, cung cấp công cụ hữu ích giúp giáo viên tiết kiệm thời gian đáng kể trong khâu chuẩn bị bài giảng.
+Hiệu quả và khả năng cá nhân hóa: Việc tích hợp AI cho phép tạo ra các trò chơi được cá nhân hóa cao, phù hợp với từng đơn vị kiến thức cụ thể. Quy trình "Human-in-the-loop" đảm bảo chất lượng nội dung sư phạm.
+Tính sáng tạo được khẳng định: Dự án đã chứng minh tính khả thi của việc ứng dụng AI (Gemini) và kiến trúc RAG để giải quyết các vấn đề thực tiễn trong ngành giáo dục, mở ra tiềm năng phát triển thành một công cụ soạn giảng toàn diện.
+4.2. Kết quả khảo sát thực tiễn
+Dưới đây là kết quả khảo sát của chúng em sau khi giới thiệu nền tảng GameWeaver cho một số giáo viên tại các trường THPT (dựa trên mẫu khảo sát tương tự Phụ lục 2 về tính hữu ích của một công cụ hỗ trợ):
+Nội dung khảo sát (Sau khi tiếp cận GameWeaver)
+Kết quả thu được (Tỷ lệ)
+Đánh giá về khả năng hỗ trợ soạn bài/tạo game
+55.0% đánh giá Tốt; 22.5% đánh giá Tương đối tốt
+Đánh giá mức độ tiết kiệm thời gian
+77.5% cho rằng Tiết kiệm đáng kể (thời gian soạn bài/tạo game dưới 30 phút)
+Lựa chọn GameWeaver để sử dụng thử
+82.5 % lựa chọn sử dụng thử
+Đánh giá tính thiết thực của đề tài
+75.0% đánh giá Rất thiết thực; 20.0% đánh giá Thiết thực
+Thảo luận: Kết quả khảo sát cho thấy nền tảng GameWeaver được đánh giá cao về tính hữu ích và khả năng hỗ trợ giáo viên. Tỷ lệ lớn giáo viên sẵn sàng sử dụng thử cho thấy nhu cầu thực tế về một công cụ tự động hóa quy trình soạn giảng và tạo game giáo dục là rất cao. Đề tài đã góp phần lan tỏa phong trào đổi mới dạy học bằng các trò chơi ứng dụng AI.
+
+Phần III. KẾT LUẬN VÀ KIẾN NGHỊ
+1. Kết luận
+Đề tài "Ứng dụng nền tảng AI để xây dựng các trò chơi hỗ trợ dạy học (GameWeaver)" đã hoàn thành các mục tiêu nghiên cứu đã đặt ra, cụ thể:
+Xây dựng thành công nền tảng GameWeaver có khả năng tự động tạo trò chơi học tập bằng AI (Gemini) và kiến trúc RAG tích hợp dữ liệu Sách Giáo Khoa.
+Khẳng định tính sáng tạo qua việc tự động hóa quy trình từ trích xuất kiến thức SGK, sinh câu hỏi, đến sinh mã nguồn game hoàn chỉnh.
+Đạt giá trị thực tiễn cao (theo kết quả thăm dò ở Phần II), giúp giáo viên tiết kiệm thời gian và tạo ra các trò chơi cá nhân hóa, hấp dẫn hơn cho học sinh.
+Rèn luyện kỹ năng lập trình, phân tích và ứng dụng công nghệ tiên tiến cho nhóm nghiên cứu.
+2. Kiến nghị
+Vì thời gian và kiến thức của nhóm nghiên cứu còn nhiều hạn chế, chúng em đề xuất một số hướng phát triển và kiến nghị để hoàn thiện đề tài:
+Mở rộng phạm vi dữ liệu: Tiếp tục tích hợp dữ liệu SGK cho các môn học và khối lớp khác (Lý, Hóa, Sinh, Sử, Địa, ...).
+Phát triển mô hình Game đa dạng: Nghiên cứu để AI có thể sinh ra các trò chơi phức tạp hơn (Game 3D chất lượng cao, game mô phỏng).
+Xây dựng cơ chế tương tác đa nền tảng: Phát triển phiên bản ứng dụng di động (Mobile App) để học sinh có thể chơi game dễ dàng hơn.
+Kiến nghị với nhà trường/Sở GD&ĐT: Tạo điều kiện để nền tảng GameWeaver được triển khai thử nghiệm rộng rãi trong các trường học, thu thập phản hồi để liên tục cải tiến sản phẩm.
+Chúng em xin chân thành cảm ơn sự giúp đỡ, góp ý của quý thầy cô để chúng em hoàn thiện đề tài và đưa vào ứng dụng thực tiễn.
+TÀI LIỆU THAM KHẢO
+STT
+Lĩnh vực
+Tên Tài liệu Tham khảo
+URL/Nguồn Tham khảo
+1
+Mã Nguồn Dự án
+longathelstan. GameWeaver - Ứng dụng nền tảng AI để xây dựng các trò chơi hỗ trợ dạy học. Mã nguồn mở.
+https://github.com/longathelstan/GameWeaver
+2
+Công nghệ AI/LLM
+Google AI: Gemini API Documentation. 
+[Tìm và bổ sung URL chính thức của Google Gemini/Generative AI Documentation]
+3
+Kiến trúc RAG
+Kiến trúc Retrieval-Augmented Generation (RAG) và Ứng dụng trong LLM.
+[Bổ sung URL của một bài viết chuyên sâu về RAG]
+4
+Phát triển Web (Frontend)
+Next.js Documentation. 
+https://nextjs.org/docs
+5
+Phát triển Web (Frontend)
+React Documentation. (Tài liệu chính thức về thư viện React).
+https://react.dev/
+6
+Thiết kế/Styling
+Tailwind CSS Documentation
+https://tailwindcss.com/docs
+7
+Cơ sở Dữ liệu
+PostgreSQL
+[Bổ sung URL chính thức của Database bạn dùng]
+8
+Ngôn ngữ Lập trình
+Tài liệu tham khảo chính thức về JavaScript (MDN Web Docs).
+[Bổ sung URL MDN về JavaScript]
+9
+Lý thuyết Giáo dục
+Chương trình Giáo dục phổ thông 2018 (hoặc các Thông tư liên quan). (Để khẳng định tính phù hợp của game).
+[Bổ sung URL của Cổng TTĐT Bộ GD&ĐT/Thông tư chính thức]
+10
+Lý thuyết Dạy học
+Lý thuyết Trò chơi hóa (Gamification) trong Giáo dục. (Bổ sung một bài viết/bài báo về Gamification).
+[Bổ sung URL của một bài viết về Gamification]
+11
+Tham khảo chung
+[Tên trang web học lập trình bạn tham khảo] (Ví dụ: fullstack.edu.vn, codelearn.io, v.v...).
+[Bổ sung các URL từ các trang web bạn đã tham khảo]

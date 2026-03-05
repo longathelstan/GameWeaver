@@ -1,111 +1,148 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
+import { z } from 'zod';
+import prisma from '../lib/prisma';
 import { processAndVectorizeContent, clearVectorStore } from '../utils/ragUtils';
-import { PrismaClient } from '@prisma/client';
+import { flashModel } from '../utils/gemini';
+import { AppError } from '../middlewares/errorHandler';
 
-const prisma = new PrismaClient();
+// ── Schemas ──────────────────────────────────────────────────────────────────
 
-export const ingestDataController = async (req: Request, res: Response) => {
+const IngestSchema = z.object({
+  projectId: z.coerce.number().int().positive().default(1),
+});
+
+// ── Controllers ───────────────────────────────────────────────────────────────
+
+export const ingestDataController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded.' });
-    }
+    if (!req.file) throw new AppError('No file uploaded.', 400);
 
-    console.log('File received:', req.file.originalname);
+    const { projectId } = IngestSchema.parse(req.body);
 
-    // Read file content
     const fileContent = req.file.buffer.toString('utf-8');
-    let jsonData;
+    let jsonData: unknown;
     try {
       jsonData = JSON.parse(fileContent);
-    } catch (e) {
-      return res.status(400).json({ message: 'Invalid JSON file.' });
+    } catch {
+      throw new AppError('Invalid JSON file.', 400);
     }
 
-    // Clear previous vector store for simplicity (or manage multiple stores in future)
-    clearVectorStore();
+    // Ensure default user exists
+    const owner = await prisma.user.upsert({
+      where: { email: 'demo@gameweaver.com' },
+      update: {},
+      create: { email: 'demo@gameweaver.com', name: 'Demo User' },
+    });
 
-    // Convert JSON to string for vectorization (simplistic approach)
-    // In a real app, we might want to structure this better
-    // Convert JSON to string for vectorization with better structure
-    const textContent = Array.isArray(jsonData)
-      ? jsonData.map((item: any) => `Chapter: ${item.chapter}\nLesson: ${item.lesson}\nContent: ${item.content}`).join('\n\n')
-      : JSON.stringify(jsonData, null, 2);
-
-    // Process and vectorize
-    await processAndVectorizeContent(textContent);
-
-    // Save to database (optional, for persistence)
-    // We assume a default project ID 1 for now or create a new one
-    // Ideally, project ID should come from request body
-    const project = await prisma.project.upsert({
-      where: { id: 1 },
+    // Ensure project exists
+    await prisma.project.upsert({
+      where: { id: projectId },
       update: {},
       create: {
-        name: "Default Project",
-        owner: {
-          connectOrCreate: {
-            where: { email: "demo@gameweaver.com" },
-            create: { email: "demo@gameweaver.com", name: "Demo User" }
-          }
-        }
-      }
+        id: projectId,
+        name: 'Default Project',
+        ownerId: owner.id,
+      },
     });
 
-    await prisma.textbookData.create({
+    // Save textbook record to get ID
+    let textbook = await prisma.textbookData.create({
       data: {
         name: req.file.originalname,
-        content: jsonData,
-        projectId: project.id
-      }
+        content: jsonData as object,
+        projectId,
+      },
     });
 
-    res.status(200).json({
-      message: 'File processed and vectorized successfully.',
-      filename: req.file.originalname,
-      data: jsonData // Return data for frontend preview if needed
-    });
-  } catch (error) {
-    console.error('Error ingesting data:', error);
-    res.status(500).json({ message: 'Error processing file.' });
+    console.log(`[INGEST] Generating structure for bookId=${textbook.id}...`);
+    try {
+      const dataPreview = JSON.stringify(jsonData).substring(0, 10000);
+      const prompt = `
+Analyze the following JSON data representing a Vietnamese textbook.
+Return a hierarchical tree structure for a checkbox tree UI.
+
+Structure:
+[
+  {
+    "value": "unique_id",
+    "label": "Chapter or Lesson Name",
+    "children": [ ... ]
   }
-};
+]
 
-export const getBooksController = async (req: Request, res: Response) => {
-  try {
-    const books = await prisma.textbookData.findMany({
-      select: {
-        id: true,
-        name: true,
-        createdAt: true,
-        // Don't fetch heavy content/structure here
-      }
-    });
-    res.status(200).json({ books });
-  } catch (error) {
-    console.error('Error fetching books:', error);
-    res.status(500).json({ message: 'Error fetching books.' });
-  }
-};
+Return ONLY the JSON array. No markdown.
 
-export const getBookDetailsController = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const book = await prisma.textbookData.findUnique({
-      where: { id: Number(id) },
-      select: {
-        id: true,
-        name: true,
-        structure: true, // Fetch the tree structure
-      }
-    });
+Data:
+${dataPreview}
+      `.trim();
 
-    if (!book) {
-      return res.status(404).json({ message: 'Book not found.' });
+      const result = await flashModel.generateContent(prompt);
+      const text = result.response.text();
+      const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      const treeData = JSON.parse(cleanText);
+
+      textbook = await prisma.textbookData.update({
+        where: { id: textbook.id },
+        data: { structure: treeData },
+      });
+      console.log(`[INGEST] Saved structure for bookId=${textbook.id}.`);
+    } catch (e) {
+      console.error(`[INGEST] Failed to generate structure for bookId=${textbook.id}`, e);
     }
 
-    res.status(200).json({ book });
-  } catch (error) {
-    console.error('Error fetching book details:', error);
-    res.status(500).json({ message: 'Error fetching book details.' });
+    // Clear old vectors for this book then re-vectorize
+    await clearVectorStore(textbook.id);
+
+    const arr = Array.isArray(jsonData) ? jsonData : [];
+    const textContent =
+      arr.length > 0
+        ? arr
+          .map(
+            (item: Record<string, string>) =>
+              `Chapter: ${item.chapter}\nLesson: ${item.lesson}\nContent: ${item.content}`
+          )
+          .join('\n\n')
+        : JSON.stringify(jsonData, null, 2);
+
+    await processAndVectorizeContent(textContent, textbook.id);
+
+    res.status(201).json({
+      success: true,
+      message: 'File ingested and vectorized successfully.',
+      bookId: textbook.id,
+      filename: req.file.originalname,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getBooksController = async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const books = await prisma.textbookData.findMany({
+      select: { id: true, name: true, createdAt: true, projectId: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.status(200).json({ success: true, books });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getBookDetailsController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = Number(req.params.id);
+    if (isNaN(id)) throw new AppError('Invalid book ID.', 400);
+
+    const book = await prisma.textbookData.findUnique({
+      where: { id },
+      select: { id: true, name: true, structure: true, createdAt: true },
+    });
+
+    if (!book) throw new AppError('Book not found.', 404);
+
+    res.status(200).json({ success: true, book });
+  } catch (err) {
+    next(err);
   }
 };
