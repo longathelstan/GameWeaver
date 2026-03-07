@@ -11,6 +11,9 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3001;
 
+// Trust first proxy (nginx/Docker) — required for express-rate-limit behind reverse proxy
+app.set('trust proxy', 1);
+
 // CORS — restrict to allowed origins or all in dev
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())

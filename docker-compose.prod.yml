@@ -24,6 +24,8 @@ services:
       PORT: 3001
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password123}@postgres:5432/${POSTGRES_DB:-gameweaver}?schema=public
       GEMINI_API_KEY: ${GEMINI_API_KEY}
+      CLIPROXY_API_KEY: ${CLIPROXY_API_KEY}
+      CLIPROXY_BASE_URL: ${CLIPROXY_BASE_URL:-http://20.193.249.132:8317/v1}
     depends_on:
       - postgres
 
