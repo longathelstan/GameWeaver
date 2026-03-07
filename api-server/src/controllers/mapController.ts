@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import { flashModel } from '../utils/gemini';
+import { generateText, FLASH_MODEL } from '../utils/gemini';
 import { AppError } from '../middlewares/errorHandler';
 
 const MapContentSchema = z.object({
@@ -34,9 +34,8 @@ Data:
 ${dataPreview}
         `.trim();
 
-    const result = await flashModel.generateContent(prompt);
-    const text = result.response.text();
-    const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const result = await generateText(FLASH_MODEL, prompt);
+    const cleanText = result.replace(/```json/g, '').replace(/```/g, '').trim();
     const treeData = JSON.parse(cleanText);
 
     res.status(200).json({ success: true, treeData });

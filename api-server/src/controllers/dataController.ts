@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import prisma from '../lib/prisma';
 import { processAndVectorizeContent, clearVectorStore } from '../utils/ragUtils';
-import { flashModel } from '../utils/gemini';
+import { generateText, FLASH_MODEL } from '../utils/gemini';
 import { AppError } from '../middlewares/errorHandler';
 
 // ── Schemas ──────────────────────────────────────────────────────────────────
@@ -76,8 +76,9 @@ Data:
 ${dataPreview}
       `.trim();
 
-      const result = await flashModel.generateContent(prompt);
-      const text = result.response.text();
+      console.log(`[INGEST] Calling Gemini flash model for structure...`);
+      const text = await generateText(FLASH_MODEL, prompt);
+      console.log(`[INGEST] Raw AI response (first 200 chars): ${text.substring(0, 200)}`);
       const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
       const treeData = JSON.parse(cleanText);
 

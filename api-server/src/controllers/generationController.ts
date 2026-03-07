@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import { flashModel, proModel } from '../utils/gemini';
+import { generateText, FLASH_MODEL, PRO_MODEL } from '../utils/gemini';
 import { retrieveContext } from '../utils/ragUtils';
 import { AppError } from '../middlewares/errorHandler';
 
@@ -69,8 +69,8 @@ Return ONLY a valid JSON array. Each object must have:
 ]
         `.trim();
 
-    const result = await flashModel.generateContent(prompt);
-    const questions = parseJsonFromAI(result.response.text());
+    const result = await generateText(FLASH_MODEL, prompt);
+    const questions = parseJsonFromAI(result);
 
     res.status(200).json({ success: true, questions });
   } catch (err) {
@@ -105,8 +105,8 @@ Return ONLY a JSON array:
 ]
         `.trim();
 
-    const result = await flashModel.generateContent(prompt);
-    const suggestions = parseJsonFromAI(result.response.text());
+    const result = await generateText(FLASH_MODEL, prompt);
+    const suggestions = parseJsonFromAI(result);
 
     res.status(200).json({ success: true, suggestions });
   } catch (err) {
@@ -138,8 +138,8 @@ Requirements:
 7. Return ONLY the raw HTML. No markdown code blocks.
         `.trim();
 
-    const result = await proModel.generateContent(prompt);
-    const code = result.response.text().replace(/```html|```tsx|```jsx|```/g, '').trim();
+    const result = await generateText(PRO_MODEL, prompt);
+    const code = result.replace(/```html|```tsx|```jsx|```/g, '').trim();
 
     res.status(200).json({ success: true, code });
   } catch (err) {
@@ -168,8 +168,8 @@ Task:
 4. Return ONLY the raw HTML string. No markdown.
         `.trim();
 
-    const result = await proModel.generateContent(prompt);
-    const code = result.response.text().replace(/```html|```tsx|```jsx|```/g, '').trim();
+    const result = await generateText(PRO_MODEL, prompt);
+    const code = result.replace(/```html|```tsx|```jsx|```/g, '').trim();
 
     res.status(200).json({ success: true, code });
   } catch (err) {
