@@ -1,8 +1,8 @@
-import prisma from './src/lib/prisma';
-import { flashModel } from './src/utils/gemini';
+import prisma from '../src/lib/prisma';
+import { flashModel } from '../src/utils/gemini';
 
 async function fix() {
-    const bookId = 5;
+    const bookId = 1;
     const textbook = await prisma.textbookData.findUnique({ where: { id: bookId } });
 
     if (!textbook) {
